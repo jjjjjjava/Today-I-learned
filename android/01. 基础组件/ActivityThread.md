@@ -1,5 +1,47 @@
 [toc]
 
+理解：
+
+### 1. **`attach()` 方法的作用**
+
+- 在应用进程启动时，`ActivityThread` 的 **`attach()`** 方法会被调用，这个方法的主要作用是通过 `Binder` 向 `ActivityManagerService` (AMS) 注册应用程序的 `ApplicationThread`。
+- **`ApplicationThread`** 是应用进程中的一个 Binder 服务端对象，实现了 `IApplicationThread` 接口，它是 `AMS` 用来与应用程序通信的主要方式。通过 `attach()` 方法，应用进程将 `ApplicationThread` 传递给 AMS，以便 AMS 能够与应用进程通信。
+
+### 2. **消息循环的启动**
+
+- `ActivityThread` 在应用程序的主线程上负责控制整个应用的生命周期管理。它通过启动 **消息循环** (`Looper.loop()`) 来等待和处理消息。
+- 主线程（即 **UI 线程**）通过消息循环来接收和处理各种消息，这些消息可能是 UI 事件、系统事件或来自 `ActivityManagerService` 的生命周期事件。
+
+### 3. **AMS 通过代理调用 `ApplicationThread` 的方法**
+
+- `ActivityManagerService` (AMS) 通过 **`ApplicationThreadProxy`** 代理来调用应用进程中的 `ApplicationThread`。`ApplicationThreadProxy` 是 `AMS` 用于与应用进程通信的远程代理对象，它通过 `Binder` 将 AMS 的调用请求发送到应用进程的 `ApplicationThread`。
+- 这些调用可能涉及到生命周期管理（如启动、暂停 `Activity`）或其他与应用程序交互的操作。
+
+### 4. **Binder 线程池处理请求**
+
+- 当 `ApplicationThreadProxy` 发起远程调用时，应用进程中的 **Binder 线程池** 中的某个线程会被唤醒，用于处理这个调用。这个唤醒的线程从 Binder 驱动接收到来自 `system_server`（AMS）的调用请求。
+- 这个 **Binder 线程** 会在应用进程中调用 `ApplicationThread` 的相应方法，比如 `schedulePauseActivity()` 或 `scheduleLaunchActivity()`，来处理 AMS 的请求。
+
+### 5. **将信息封装为消息并放入消息队列**
+
+- **`ApplicationThread`** 是一个 Binder 服务端对象，它接收到 AMS 的调用后，不会直接在 Binder 线程中执行复杂的生命周期操作（如暂停 `Activity`）。相反，它会将这些操作封装为 **`Message`**，然后通过 **`Handler`** 发送到主线程的消息队列中。
+- 通过 **`Handler`**，`ApplicationThread` 将消息传递给主线程的消息循环 (`Looper`) 来处理。主线程的 `Looper` 在消息队列中循环，等待处理消息。
+
+### 6. **主线程处理 AMS 的请求**
+
+- 一旦消息被放入主线程的 **消息队列** 中，`ActivityThread` 的主线程就会通过 **`Looper`** 机制处理这些消息。
+- 主线程最终会调用具体的生命周期方法，例如 `Activity.onPause()` 或 `Activity.onResume()`，以处理来自 AMS 的请求。
+
+
+
+
+
+
+
+
+
+
+
 ## 01.什么是ActivityThread
 
 一旦新的进程被 `Zygote` 创建，该进程的入口点是 `ActivityThread.main()` 方法。这个方法由反射机制调用，正式进入应用的启动流程。
@@ -76,8 +118,8 @@ new一个ActivityThread对象，此时因为：final H mH = new H();，因此创
 
 在 `ActivityThread` 的主线程中，有一个专门的 `Handler`，叫做 **`H`**，它负责接收并处理 `AMS` 发来的各种请求。启动 `Activity` 的消息被发送到消息队列后，`H` 会处理这个消息，调用 `performLaunchActivity()` 方法启动 `Activity`。
 
-```
-java复制代码// ActivityThread.java
+```java
+// ActivityThread.java
 private void handleLaunchActivity(ActivityClientRecord r, Intent customIntent) {
     // 1. 创建 Activity 实例
     Activity a = performLaunchActivity(r, customIntent);
