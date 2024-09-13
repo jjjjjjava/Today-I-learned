@@ -12,6 +12,8 @@
 
 
 
+这里比较困惑了，不是有Binder机制，消息机制吗？为什么还需要一个广播来进行通信啊。很简单啊，你可以看作它是对这些机制的封装，提供更高级的通信。
+
 **BroadcastReceiver** 则是对发送出来的**Broadcast**进行过滤、接受和响应的组件。
 
 ### 1.2 广播执行流程
@@ -255,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
 之前发送和接收到的广播全都是属于系统全局广播，即发出的广播可以被其他应用接收到，而且也可以接收到其他应用发送出的广播，这样可能会有不安全因素
 
-因此，在某些情况下可以采用本地广播机制，使用这个机制发出的广播只能在应用内部进行传递，而且广播接收器也只能接收本应用内自身发出的广播。本地广播需要借助LocalBroadcastManager进行管理。
+因此，在某些情况下可以采用本地广播机制，使用这个机制发出的广播只能在应用内部进行传递，而且广播接收器也只能接收本应用内自身发出的广播。本地广播需要借助LocalBroadcastManager进行管理注册和销毁。同时发送时也要借助localBroadcastManager进行发送
 
 即：进程间通信改为同一进程内部线程间通信，底层的通信机制也由Binder改为事件机制。
 
@@ -320,8 +322,8 @@ public class MainActivity extends AppCompatActivity {
 
    - 使用 `sendBroadcast(Intent)` 方法发送本地广播。
 
-   ```
-   java复制代码public void sendLocalBroadcast(View view) {
+   ```java
+   public void sendLocalBroadcast(View view) {
        Intent intent = new Intent(LOCAL_ACTION);
        localBroadcastManager.sendBroadcast(intent);
    }
@@ -418,7 +420,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 
 
-## 04. 广播发送的原理
+## 05. 广播发送的原理
 
 Android中的广播底层基于Binder机制，借助AMS进行消息的存储转发。
 
