@@ -92,7 +92,7 @@ Java 虚拟机栈会出现两种异常：StackOverFlowError 和 OutOfMemoryError
 
 跟虚拟机栈很像， **虚拟机栈为虚拟机执行 Java 方法 （也就是字节码）服务，而本地方法栈则为虚拟机使用到的 Native 方法服务。**
 
-### 2.4方法区
+### 2.4 方法区
 
 「方法区」是 JVM 中规范的一部分。
 
