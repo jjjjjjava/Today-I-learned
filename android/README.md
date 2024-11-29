@@ -48,13 +48,10 @@
 
 - **RecyclerView**：RecyclerView 的使用和自定义，Adapter 和 ViewHolder 模式。
 - **ViewPager**：ViewPager 的基本使用，PagerAdapter 和 FragmentPagerAdapter。
-- **CoordinatorLayout**：高级布局，包括滑动事件的协调。
-- **其他 UI 组件**：如 ScrollView、ListView 等高级使用。
+- **ScrollView**：
+- **ListView**：
 
 ### 8. 流行框架
 
-- **网络请求框架**：如 Retrofit、OkHttp。
-- **图片加载框架**：如 Glide、Picasso。
-- **依赖注入框架**：如 Dagger、Hilt。
-- **响应式编程框架**：如 RxJava、LiveData。
-- **数据库框架**：Room 数据库、SQLite 的封装和使用。
+- **网络请求框架**：OkHttp。
+- **响应式编程框架**：RxJava
