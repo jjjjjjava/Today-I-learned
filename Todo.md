@@ -1,0 +1,8 @@
+- 算法
+  - 晚上重写[字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
+  - 完善上面算法的笔记
+- Andriod
+  - 复习04 第一部分
+  - 预习后续部分。
+- 其他
+  - 发布2篇文章
