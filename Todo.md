@@ -1,6 +1,6 @@
 - 算法
-  - 复习字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
+  - 复习01_02和02_ 01。
 - Andriod
-  - 复习04 第一部分
+  - 复习06_04_01
 - 其他
   - 发布2篇文章
