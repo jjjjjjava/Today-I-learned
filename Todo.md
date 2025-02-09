@@ -1,13 +1,13 @@
 - 算法
   - 复习算法
+  - 错题：三数之和
 - Andriod
   - 复习activity 
+- Java
+  - 学习集合框架
+    - https://juejin.cn/post/6844903521092009997
+    - https://juejin.cn/user/1838039171884413/posts
+    - https://juejin.cn/post/6844903521112817672
 - 其他
   - 发布2篇文章
-  - 家庭便携垃圾袋
 
-
-
-3h - 4个阶段，每个45分钟
-
-1. 复习阶段	45
