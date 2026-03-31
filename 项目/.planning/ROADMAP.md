@@ -11,13 +11,23 @@
 
 **Goal:** 能在白板上讲清楚 Handler/Binder/View/AMS 的原理链路，达到被追问三层也能答上的程度。
 
-**Plans:**
+**Plans:** 5 plans
+
+- [ ] 01-PLAN-handler.md — 撰写 Handler 消息机制面试笔记（ThreadLocal/epoll/同步屏障/IdleHandler/消息复用池）
+- [ ] 01-PLAN-binder.md — 撰写 Binder IPC 原理面试笔记（mmap 一次拷贝/Stub-Proxy/ServiceManager/线程池/linkToDeath）
+- [ ] 01-PLAN-view.md — 撰写 View 绘制体系面试笔记（performTraversals/MeasureSpec/Choreographer-VSYNC/DisplayList/RenderThread）
+- [ ] 01-PLAN-ams.md — 撰写 AMS-WMS-PMS 及系统启动面试笔记（启动全链路/LaunchMode/Activity-Window-View/APK 安装）
+- [ ] 01-PLAN-classloader.md — 撰写 ClassLoader 与热修复面试笔记（双亲委派/dexElements 前插/QZone-Tinker-Sophix/插件化 Hook AMS）
+
+**Plan Details:**
 
 1. 写 `01. Handler机制.md`，覆盖：ThreadLocal 保证每线程一个 Looper、MessageQueue 基于时间戳的链表结构、nativePollOnce epoll 阻塞与 nativeWake 唤醒、同步屏障 postSyncBarrier 与 Choreographer 的关系、IdleHandler 的用途与触发时机、消息复用池 Message.sPool 实现、主线程 Looper 死循环为什么不 ANR
 2. 写 `02. Binder原理.md`，覆盖：为什么选 Binder 而非 socket/pipe（一次拷贝 vs 两次、安全性）、mmap 内核映射实现一次拷贝的具体机制、Client-Server-ServiceManager 三角关系、AIDL 生成的 Stub/Proxy 各自角色、Binder 线程池默认 15 线程限制、TransactionTooLargeException 根因、linkToDeath 死亡通知机制
 3. 写 `03. View绘制体系.md`，覆盖：ViewRootImpl.performTraversals() 触发入口、MeasureSpec 三种模式与父子 View 测量传递、requestLayout() vs invalidate() 触发路径差异、Choreographer 接收 VSYNC 信号驱动帧调度、硬件加速下 DisplayList/RenderNode 机制、RenderThread 与 MainThread 协作流程、自定义 View wrap_content 不生效的根因
 4. 写 `04. AMS-WMS-PMS及系统启动.md`，覆盖：Activity-Window-View 三者关系（DecorView/WindowManager）、AMS 通过 Binder 回调 ApplicationThread 驱动生命周期、ActivityRecord/TaskRecord/ActivityStack 数据结构、四种 LaunchMode 与 FLAG 对任务栈的影响、应用进程启动全链路（AMS → Zygote fork → ActivityThread.main()）、WMS 管理 Surface z-order、PMS APK 安装流程（解析→权限校验→dex优化→信息注册）
 5. 写 `05. ClassLoader与热修复.md`，覆盖：PathClassLoader vs DexClassLoader 区别、双亲委派模型与破坏方式、BaseDexClassLoader.dexElements 数组顺序决定类加载优先级、热修复三大方案对比（QZone pre-verify 问题/Tinker 差量 patch/Sophix 方法替换）、插件化三大核心问题（类加载+资源加载+四大组件生命周期）、Hook AMS 占坑 Activity 方案原理
+
+**Requirements:** [HANDLER-01, BINDER-01, VIEW-01, AMS-01, CLASSLOADER-01]
 
 **Success Criteria:**
 - [ ] 被问"Handler 消息机制"能不看笔记讲完整：ThreadLocal → MessageQueue 链表 → epoll 阻塞唤醒 → 同步屏障，且能回答"主线程死循环为什么不 ANR"这个追问
@@ -146,7 +156,7 @@
 
 | Phase | Notes Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Android 核心原理 | 0/5 | Not started | - |
+| 1. Android 核心原理 | 0/5 | Planned (5 plans, 2 waves) | - |
 | 2. 性能优化 | 0/4 | Not started | - |
 | 3. 音视频 & OpenGL | 0/4 | Not started | - |
 | 4. Kotlin & 语言基础 | 0/3 | Not started | - |
