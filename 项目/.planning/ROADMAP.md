@@ -195,13 +195,15 @@
 
 **Goal:** 学习一个新模块时有标准文档可遵循，完成后 YAML card 自动进入 active pool
 
-**Plans:** TBD
+**Plans:** 3 tasks complete (inline, planning-with-files-zh)
 
 **Requirements:** WORKFLOW-01, WORKFLOW-02
 
 **Success Criteria:**
-- [ ] 存在标准工作流文档，描述从 GSD milestone 立项到交付 YAML card 的完整步骤
-- [ ] 按文档完成一次新模块学习后，产出的 YAML card 出现在 active pool 队列中
+- [x] 存在标准工作流文档，描述从 GSD milestone 立项到交付 YAML card 的完整步骤
+- [x] 按文档完成一次新模块学习后，产出的 YAML card 出现在 active pool 队列中
+
+**Completed:** 2026-03-31
 
 **Dependencies:** Phase 7, Phase 8
 
@@ -217,7 +219,7 @@
 - [ ] **Phase 6: 面试冲刺** — 答题模板/系统设计题库/项目话术/模拟面试验证
 - [x] **Phase 7: YAML Schema Extension** — 动态间隔 + 毕业机制 + sub_points 子知识点追踪 (completed 2026-03-31)
 - [x] **Phase 8: Cross-Card Graph Validation** — related_cards + 跨卡联合考察独立计分 (completed 2026-03-31)
-- [ ] **Phase 9: GSD Learning Workflow** — 新学习模块标准工作流文档
+- [x] **Phase 9: GSD Learning Workflow** — 新学习模块标准工作流文档 (completed 2026-03-31)
 
 ---
 

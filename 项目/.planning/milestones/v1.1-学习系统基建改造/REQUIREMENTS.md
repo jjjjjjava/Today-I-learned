@@ -27,8 +27,8 @@
 
 ## GSD 新学习工作流（WORKFLOW）
 
-- [ ] **WORKFLOW-01**: 定义标准工作流文档：新学习模块如何走 GSD milestone → phase → 交付 YAML card
-- [ ] **WORKFLOW-02**: 学习完成时，YAML card 作为 phase 的交付物，存入 active pool
+- [x] **WORKFLOW-01**: 定义标准工作流文档：新学习模块如何走 GSD milestone → phase → 交付 YAML card
+- [x] **WORKFLOW-02**: 学习完成时，YAML card 作为 phase 的交付物，存入 active pool
 
 ## Future Requirements
 
@@ -57,5 +57,5 @@
 | MOOD-02 | Phase 8 | Complete |
 | MOOD-03 | Phase 8 | Complete |
 | MOOD-04 | Phase 8 | Complete |
-| WORKFLOW-01 | Phase 9 | Pending |
-| WORKFLOW-02 | Phase 9 | Pending |
+| WORKFLOW-01 | Phase 9 | Complete |
+| WORKFLOW-02 | Phase 9 | Complete |

@@ -42,6 +42,7 @@ description: 面向 Android 工程师的长期学习行为管理系统。当用�
 - [子知识点追踪规则](#子知识点追踪规则)
 - [跨卡知识图谱规则（v1.1 新增）](#跨卡知识图谱规则v11-新增)
 - [状态签到规则（v1.1 新增）](#状态签到规则v11-新增)
+- [新模块学习工作流（v1.1 新增）](#新模块学习工作流v11-新增)
 - [注意事项](#注意事项)
 - [快速参考](#快速参考)
 
@@ -954,6 +955,26 @@ related_cards: [10, 11, 14]   # 强关联的其他卡片 ID（整数列表）
 | C | 只做 1-2 张最高优先级卡，降低考察强度 |
 
 mood 记录在 joint-review-log.md，不写入单卡 review_sessions。
+
+---
+
+## 新模块学习工作流（v1.1 新增）
+
+详细步骤见 [new-module-workflow.md](new-module-workflow.md)。
+
+**7步流程：**
+
+1. **立项** — 在 GSD ROADMAP.md 创建新 phase，写 Goal 和 Success Criteria
+2. **学习** — 原始笔记写入 `04. 学习_*/` 目录
+3. **拆解** — 列出 3-8 个独立知识点，每个对应一张 YAML card
+4. **设计 sub_points** — 每个知识点列 3-8 个子知识点
+5. **创建 YAML card** — 放入 `states/active/`，新卡默认 `level:1`、`next_review: 学习日 + 3天`
+6. **校验** — id 唯一、sub_points 已填、related_cards 已参考分组、status: active
+7. **更新 ROADMAP** — 打勾 Success Criteria，标记 phase 完成
+
+**关键约束：**
+- 新卡 `status` 必须是 `active`（不是 `draft` 或其他）才会进入复习队列
+- `next_review` 必须设置，不能为空，否则不会出现在每日任务中
 
 ---
 
