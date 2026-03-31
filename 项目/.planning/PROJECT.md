@@ -14,7 +14,7 @@
 
 <!-- 已完成并验证有价值的阶段 -->
 
-(None yet — ship to validate)
+- [x] YAML schema v1.1 扩展（sub_points + review_sessions + 毕业/回归规则文档）— Validated in Phase 7: yaml-schema-extension
 
 ### Active
 
@@ -62,4 +62,4 @@
 | 每个方向包含面试题总结 | 知识点学完即输出面试答题思路 | — Pending |
 
 ---
-*Last updated: 2026-03-31 after project initialization*
+*Last updated: 2026-03-31 — Phase 7 complete: YAML schema v1.1 extended across all 15 active cards*
