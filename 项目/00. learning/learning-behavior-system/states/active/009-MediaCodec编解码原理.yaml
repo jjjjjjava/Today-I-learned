@@ -1,0 +1,47 @@
+﻿id: 009
+title: MediaCodec编解码原理
+category: android
+core: true
+level: 3
+review_stage: 2
+status: active
+last_study: 2026-03-25
+next_review: 2026-04-04
+importance: 4
+created: 2026-03-02
+stability_score: 90
+consecutive_success: 6
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-25
+  result: good
+  score: 4
+  mode: qa
+  weak_points:
+    - MediaExtractor和MediaMuxer说混（Extractor解封装读取，Muxer封装写入）
+  suggested_interval_days: 10
+notes: 硬编硬解、异步同步模式、常见问题（绿屏花屏）
+
+sub_points:
+  - id: sp1
+    desc: "MediaCodec 硬编硬解流程（configure → start → dequeueInput → queueInput → dequeueOutput）"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp2
+    desc: "同步模式 vs 异步模式（Callback）的使用场景与区别"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp3
+    desc: "常见问题排查（绿屏、花屏的原因与解决）"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp4
+    desc: "MediaExtractor 解封装 vs MediaMuxer 封装（读取 vs 写入，不要混淆）"
+    status: weak
+    last_reviewed: 2026-03-25
+
+review_sessions:
+  - date: 2026-03-25
+    covered_sub_points: [sp1, sp2, sp3, sp4]
+    result: good
+    score: 4

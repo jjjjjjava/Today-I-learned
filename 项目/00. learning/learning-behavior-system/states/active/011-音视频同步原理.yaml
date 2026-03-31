@@ -1,0 +1,70 @@
+id: 011
+title: 音视频同步原理
+category: android
+core: true
+level: 2
+review_stage: 0
+status: active
+last_study: 2026-03-26
+next_review: 2026-03-30
+importance: 4
+created: 2026-03-02
+stability_score: 80
+consecutive_success: 6
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-26
+  result: good
+  score: 4
+  mode: qa
+  weak_points:
+    - 同步核心表述为"curTime=passTime"不够精确，应为帧PTS和passTime做diff比较
+  suggested_interval_days: 4
+notes: |
+  核心内容：
+  1. 音视频同步：三种同步源（视频PTS/音频PTS/系统时间），选系统时间原因（解耦）
+     - 比对：sleepRender，passTime vs curTime，diff>0则sleep
+     - 校准：暂停/seek后 mStartTimeForSync = 当前系统时间 - 当前帧PTS
+  2. MediaExtractor原理与工作流：
+     - 底层依赖CPU，只做查表+读取，不做任何计算
+     - 文件头结构：轨道描述（音/视轨信息）+ 帧映射表（每帧在文件中的位置和大小）
+     - 工作流：setDataSource（读文件头建索引）→ selectTrack（选轨道）→ getTrackFormat（获取MediaFormat）
+               → 循环：readSampleData（查帧映射表→读数据到buffer，返回size，<0则写EOS）→ advance()（指针移到下一帧）
+     - ⚠️ 易漏：readSampleData之后必须调用advance()，否则每次读同一帧
+  3. 代码封装结构（代理/适配器模式）：
+     - MMExtractor：工具类，持有MediaExtractor，封装 setDataSource/selectTrack/readSampleData/advance/seek/release
+     - IExtractor：接口，定义解封装能力（readBuffer/seek/getFormat等）
+     - VideoExtractor/AudioExtractor：实现IExtractor，内部持有MMExtractor，把接口调用转发给MMExtractor
+       - 委托/代理发生在 VideoExtractor/AudioExtractor 中，不在接口层
+       - VideoExtractor 选视频轨，AudioExtractor 选音频轨，各自持独立MMExtractor实例
+       - ⚠️ 易错：这是代理/适配器模式，不是策略模式
+     - BaseDecoder：持有IExtractor，定义解码主循环，waitDecode/notifyDecode锁机制
+     - VideoDecoder：填充虚函数，configCodec处理Surface等待（递归调用+notify唤醒）
+
+sub_points:
+  - id: sp1
+    desc: "三种同步源（视频PTS/音频PTS/系统时间）及选系统时间的原因（解耦）"
+    status: good
+    last_reviewed: 2026-03-26
+  - id: sp2
+    desc: "同步核心逻辑：帧PTS与passTime做diff比较，diff>0则sleep等待"
+    status: ok
+    last_reviewed: 2026-03-26
+  - id: sp3
+    desc: "暂停/seek后校准逻辑：mStartTimeForSync = 当前系统时间 - 当前帧PTS"
+    status: good
+    last_reviewed: 2026-03-26
+  - id: sp4
+    desc: "MediaExtractor工作流：setDataSource → selectTrack → readSampleData → advance()，advance()易漏"
+    status: good
+    last_reviewed: 2026-03-26
+  - id: sp5
+    desc: "代码封装结构：MMExtractor/IExtractor/VideoExtractor/AudioExtractor 代理/适配器模式"
+    status: good
+    last_reviewed: 2026-03-26
+
+review_sessions:
+  - date: 2026-03-26
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
+    result: good
+    score: 4

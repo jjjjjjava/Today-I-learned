@@ -1,0 +1,50 @@
+﻿id: 010
+title: 音视频基础概念
+category: android
+core: true
+level: 3
+review_stage: 0
+status: active
+last_study: 2026-03-25
+next_review: 2026-04-04
+importance: 4
+created: 2026-03-02
+stability_score: 86
+consecutive_success: 7
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-25
+  result: good
+  score: 4
+  mode: qa
+  weak_points: []
+  suggested_interval_days: 10
+notes: 编解码格式（H.264/H.265/AAC）、封装格式（MP4/FLV）、码率帧率分辨率
+
+sub_points:
+  - id: sp1
+    desc: "视频编码格式对比：H.264 vs H.265（压缩率、兼容性、应用场景）"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp2
+    desc: "音频编码格式：AAC vs MP3（音质、压缩率、移动端适用性）"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp3
+    desc: "封装格式：MP4 vs FLV vs TS（容器结构差异与流媒体适用性）"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp4
+    desc: "码率、帧率、分辨率的关系及对视频质量/文件大小的影响"
+    status: good
+    last_reviewed: 2026-03-25
+  - id: sp5
+    desc: "关键帧（I帧）、P帧、B帧的作用与编解码依赖关系"
+    status: good
+    last_reviewed: 2026-03-25
+
+review_sessions:
+  - date: 2026-03-25
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
+    result: good
+    score: 4

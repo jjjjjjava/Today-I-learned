@@ -1,0 +1,66 @@
+id: 014
+title: 音视频重封装MP4
+category: android
+core: true
+level: 1
+review_stage: 0
+status: active
+last_study: 2026-03-26
+next_review: 2026-03-30
+importance: 4
+created: 2026-03-16
+stability_score: 74
+consecutive_success: 5
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-26
+  result: good
+  score: 4
+  mode: qa
+  weak_points:
+    - MP4盒子层级细节（stbl内部子box等）记忆模糊，但核心层级已掌握
+    - mdat名字说不出（存放实际压缩数据的容器）
+    - advance()仍需提醒
+  suggested_interval_days: 4
+notes: |
+  MediaExtractor解封装 + MediaMuxer封装，数据全程不解码（H264/AAC直接搬运）
+  核心流程：init(创建Extractor+Muxer, addTrack) → remux(循环read+write) → release(stop落盘moov box)
+  重封装 vs 转码：重封装不经过解码，转码多了解码+编码两步
+  MP4文件核心盒子结构：
+    moov：目录（所有元数据）
+    └── trak：轨道（视频轨/音频轨各一个）
+        └── mdia：媒体信息
+            └── minf：媒体详细信息
+                └── stbl：帧映射表（每帧在mdat中的偏移量、大小、时间戳）
+    mdat：数据仓库（实际的H264/AAC压缩数据，平铺存放）
+  mdat中数据排列取决于写入方式：
+    顺序写入：所有视频帧在前，音频帧在后，流式传输不友好
+    交替写入：按时间交错排列，流式传输友好
+
+sub_points:
+  - id: sp1
+    desc: "重封装 vs 转码：重封装不解码直接搬运，转码多解码+编码两步"
+    status: good
+    last_reviewed: 2026-03-26
+  - id: sp2
+    desc: "核心流程：init(创建Extractor+Muxer, addTrack) → remux(循环read+write) → release(stop落盘moov)"
+    status: good
+    last_reviewed: 2026-03-26
+  - id: sp3
+    desc: "MP4盒子层级：moov → trak → mdia → minf → stbl（帧映射表）；mdat（数据仓库）"
+    status: ok
+    last_reviewed: 2026-03-26
+  - id: sp4
+    desc: "mdat存放实际压缩数据（H264/AAC），顺序写入vs交替写入对流媒体的影响"
+    status: ok
+    last_reviewed: 2026-03-26
+  - id: sp5
+    desc: "advance()调用必要性：readSampleData之后必须advance()，否则每次读同一帧"
+    status: ok
+    last_reviewed: 2026-03-26
+
+review_sessions:
+  - date: 2026-03-26
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
+    result: good
+    score: 4
