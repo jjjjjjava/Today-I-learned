@@ -21,6 +21,7 @@ last_assessment:
     - orthoM初始表述"让y轴占据NDC的28%"→方向稍反，是扩大NDC范围使视频只占28%，自行纠正后理解正确
     - orthoM本质=修改视频坐标系到NDC的映射关系，表述已清晰
   suggested_interval_days: 4
+related_cards: [23, 24, 26]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
   对应章节：3.3视频比例拉伸_其一：原因及深入理解矩阵变换

@@ -22,6 +22,7 @@ last_assessment:
     - uniform vs attribute区分已掌握（正面进展，上次fail的核心问题已解决）
     - glGetUniformLocation返回槽位号非内存地址已理解
   suggested_interval_days: 2
+related_cards: [19, 22, 24]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
   对应章节：3.4坐标系统与变化 + 3.5着色器中矩阵应用详解

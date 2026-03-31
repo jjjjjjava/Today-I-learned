@@ -20,6 +20,7 @@ last_assessment:
   weak_points:
     - 默认FBO color attachment说"指向Surface"→更准确是指向GraphicBuffer（Surface背后的内存块）
   suggested_interval_days: 5
+related_cards: [17, 24, 27]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
   对应章节：3.1原理分析 + 3.2实际代码

@@ -21,6 +21,7 @@ last_assessment:
     - uniform变量说"需要varying中转"→uniform直接在片元着色器声明即可，不经顶点着色器
     - 整体概念掌握扎实
   suggested_interval_days: 3
+related_cards: [18, 23]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_01.初步了解OpenGL ES.md
   对应章节：3.3 GLSL + 3.4代码架构

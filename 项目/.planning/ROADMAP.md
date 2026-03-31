@@ -177,13 +177,15 @@
 
 **Goal:** 卡片之间的强关联被显式记录，联合考察可被触发并独立记录，不污染单卡得分
 
-**Plans:** TBD
+**Plans:** 4 tasks complete (inline, planning-with-files-zh)
 
-**Requirements:** GRAPH-01, GRAPH-02, GRAPH-03
+**Requirements:** GRAPH-01, GRAPH-02, GRAPH-03, MOOD-01, MOOD-02, MOOD-03, MOOD-04
 
 **Success Criteria:**
-- [ ] 卡片包含 related_cards 字段，值为强关联的其他卡片 ID 列表
-- [ ] 联合考察覆盖跨卡完整调用链，结果记录在独立日志，单卡 consecutive_success 不变
+- [x] 卡片包含 related_cards 字段，值为强关联的其他卡片 ID 列表
+- [x] 联合考察覆盖跨卡完整调用链，结果记录在独立日志，单卡 consecutive_success 不变
+
+**Completed:** 2026-03-31
 
 **Dependencies:** Phase 7
 
@@ -214,7 +216,7 @@
 - [ ] **Phase 5: 跨平台** — Flutter 三棵树渲染原理/MethodChannel 底层/HarmonyOS ArkUI
 - [ ] **Phase 6: 面试冲刺** — 答题模板/系统设计题库/项目话术/模拟面试验证
 - [x] **Phase 7: YAML Schema Extension** — 动态间隔 + 毕业机制 + sub_points 子知识点追踪 (completed 2026-03-31)
-- [ ] **Phase 8: Cross-Card Graph Validation** — related_cards + 跨卡联合考察独立计分
+- [x] **Phase 8: Cross-Card Graph Validation** — related_cards + 跨卡联合考察独立计分 (completed 2026-03-31)
 - [ ] **Phase 9: GSD Learning Workflow** — 新学习模块标准工作流文档
 
 ---

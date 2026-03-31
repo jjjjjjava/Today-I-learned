@@ -20,6 +20,7 @@ last_assessment:
   weak_points: []
   suggested_interval_days: 10
 notes: 编解码格式（H.264/H.265/AAC）、封装格式（MP4/FLV）、码率帧率分辨率
+related_cards: [9, 11]
 
 sub_points:
   - id: sp1

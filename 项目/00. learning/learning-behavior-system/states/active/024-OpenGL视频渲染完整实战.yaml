@@ -22,6 +22,7 @@ last_assessment:
     - API名字持续出错：glEnableVertexAttribArray写成glEnableAtrtib，glVertexAttribPointer写成glMatrixAttrib4fv
     - 阶段A/B/C/D整体框架掌握扎实，各阶段职责清晰
   suggested_interval_days: 2
+related_cards: [21, 22, 23, 27]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
   代码来源：00. learning/learning-behavior-system/code/logcad.md

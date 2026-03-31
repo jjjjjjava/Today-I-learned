@@ -20,6 +20,7 @@ last_assessment:
   weak_points:
     - 同步核心表述为"curTime=passTime"不够精确，应为帧PTS和passTime做diff比较
   suggested_interval_days: 4
+related_cards: [9, 10]
 notes: |
   核心内容：
   1. 音视频同步：三种同步源（视频PTS/音频PTS/系统时间），选系统时间原因（解耦）

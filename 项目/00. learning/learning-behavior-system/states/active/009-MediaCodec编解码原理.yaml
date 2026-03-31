@@ -21,6 +21,7 @@ last_assessment:
     - MediaExtractor和MediaMuxer说混（Extractor解封装读取，Muxer封装写入）
   suggested_interval_days: 10
 notes: 硬编硬解、异步同步模式、常见问题（绿屏花屏）
+related_cards: [10, 11, 14]
 
 sub_points:
   - id: sp1

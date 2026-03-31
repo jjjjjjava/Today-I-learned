@@ -22,6 +22,7 @@ last_assessment:
     - mdat名字说不出（存放实际压缩数据的容器）
     - advance()仍需提醒
   suggested_interval_days: 4
+related_cards: [9, 10]
 notes: |
   MediaExtractor解封装 + MediaMuxer封装，数据全程不解码（H264/AAC直接搬运）
   核心流程：init(创建Extractor+Muxer, addTrack) → remux(循环read+write) → release(stop落盘moov box)

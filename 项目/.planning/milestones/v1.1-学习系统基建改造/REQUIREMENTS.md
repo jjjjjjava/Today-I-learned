@@ -14,16 +14,16 @@
 
 ## 跨卡知识图谱（GRAPH）
 
-- [ ] **GRAPH-01**: 卡片支持 related_cards 字段，记录强关联的其他卡片 ID
-- [ ] **GRAPH-02**: 定期触发跨卡联合考察，考察跨多张卡的完整调用链
-- [ ] **GRAPH-03**: 联合考察结果独立记录，不影响单卡的 consecutive_success
+- [x] **GRAPH-01**: 卡片支持 related_cards 字段，记录强关联的其他卡片 ID
+- [x] **GRAPH-02**: 定期触发跨卡联合考察，考察跨多张卡的完整调用链
+- [x] **GRAPH-03**: 联合考察结果独立记录，不影响单卡的 consecutive_success
 
 ## 状态签到与自适应复习（MOOD）
 
-- [ ] **MOOD-01**: 每次复习会话开始前有简短状态签到环节，用户选择当前学习状态
-- [ ] **MOOD-02**: 状态与复习方式的映射基于认知科学/SRS 研究，有调研依据（不拍脑袋）
-- [ ] **MOOD-03**: 状态差时，逾期卡的处理策略有明确规则（不由用户临场决定）
-- [ ] **MOOD-04**: 签到状态记录在当次复习日志中，供后续趋势分析
+- [x] **MOOD-01**: 每次复习会话开始前有简短状态签到环节，用户选择当前学习状态
+- [x] **MOOD-02**: 状态与复习方式的映射基于认知科学/SRS 研究，有调研依据（不拍脑袋）
+- [x] **MOOD-03**: 状态差时，逾期卡的处理策略有明确规则（不由用户临场决定）
+- [x] **MOOD-04**: 签到状态记录在当次复习日志中，供后续趋势分析
 
 ## GSD 新学习工作流（WORKFLOW）
 
@@ -50,12 +50,12 @@
 | SUBPOINT-01 | Phase 7 | Complete (07-01) |
 | SUBPOINT-02 | Phase 7 | Complete (07-01) |
 | SUBPOINT-03 | Phase 7 | Complete (07-01) |
-| GRAPH-01 | Phase 8 | Pending |
-| GRAPH-02 | Phase 8 | Pending |
-| GRAPH-03 | Phase 8 | Pending |
-| MOOD-01 | Phase 8 | Pending |
-| MOOD-02 | Phase 8 | Pending |
-| MOOD-03 | Phase 8 | Pending |
-| MOOD-04 | Phase 8 | Pending |
+| GRAPH-01 | Phase 8 | Complete |
+| GRAPH-02 | Phase 8 | Complete |
+| GRAPH-03 | Phase 8 | Complete |
+| MOOD-01 | Phase 8 | Complete |
+| MOOD-02 | Phase 8 | Complete |
+| MOOD-03 | Phase 8 | Complete |
+| MOOD-04 | Phase 8 | Complete |
 | WORKFLOW-01 | Phase 9 | Pending |
 | WORKFLOW-02 | Phase 9 | Pending |

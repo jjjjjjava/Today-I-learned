@@ -21,6 +21,7 @@ last_assessment:
     - updateTexImage说成"上传纹理到GPU"→实际是更新OES纹理引用指向新GraphicBuffer，是引用更新非拷贝，零拷贝的本质
     - onFrameAvailable→GL线程的传递流程初次表述不完整，补充后理解正确
   suggested_interval_days: 3
+related_cards: [18, 21, 27]
 notes: |
   CPU路径瓶颈：1080p 30fps → 90MB/s，三个问题：YUV→RGB CPU计算/内存分配/glTexImage2D拷贝
   零拷贝核心组件：

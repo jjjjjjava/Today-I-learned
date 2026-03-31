@@ -20,6 +20,7 @@ last_assessment:
   weak_points:
     - 无明显问题，scaleFactor路径清晰，ratio /= scaleFactor方向正确且能自行纠错
   suggested_interval_days: 3
+related_cards: [22, 23]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_03.使用OpenGL渲染画中画.md
   对应章节：3.4上层视频平移 + 3.5上层视频缩放
