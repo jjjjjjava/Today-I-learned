@@ -1,0 +1,184 @@
+id: 027
+title: 深入理解EGL（手动管理OpenGL渲染环境）
+category: android
+core: true
+level: 1
+review_stage: 0
+status: active
+last_study: 2026-03-27
+next_review: 2026-03-29
+importance: 5
+created: 2026-03-26
+stability_score: 30
+consecutive_success: 1
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-27
+  result: good
+  score: 4
+  mode: study
+  weak_points:
+    - createOffscreenSurface vs createWindowSurface未覆盖（离屏渲染用途）
+    - sleep(20)限速问题：教学代码简化，生产级应去掉，依赖eglSwapBuffers天然VSync限速
+  suggested_interval_days: 2
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_04.EGL.md
+  代码来源：00. learning/learning-behavior-system/code/logcad.md
+  前置：021双Surface架构 + 024完整实战
+
+  今日预热已覆盖：
+    1. EGL两大职责：
+       - 桥接OpenGL和窗口系统（EGLDisplay/EGLConfig/EGLSurface）
+       - 替OpenGL管理Context（EGLContext）
+       - 原因：OpenGL跨平台不认识Android Surface，Context创建是平台相关的
+
+    2. FBO结构（指针集合）：
+       - FBO自身不存数据，只持有插槽（color/depth/stencil attachment）
+       - 默认FBO(0)：EGL创建，color attachment → GraphicBuffer
+         eglMakeCurrent时把GraphicBuffer的GPU地址填进color attachment槽
+       - 自定义FBO：glGenFramebuffers + glFramebufferTexture2D手动挂纹理
+         结果存纹理，不出屏幕，供下一个渲染Pass使用
+
+    3. eglMakeCurrent机制：
+       - 把EGLDisplay/EGLContext/draw EGLSurface/read EGLSurface存入线程TLS
+       - 把默认FBO(0)的color attachment绑定到EGLSurface内的GraphicBuffer
+       - 之后任何OpenGL API调用自动从TLS取当前线程Context
+       - glDrawArrays → 写入默认FBO → 实际写入GraphicBuffer → eglSwapBuffers → SurfaceFlinger
+
+    4. EGLContext = OpenGL线程隔离工具箱：
+       - 内含：状态层（当前着色器/混合模式/FBO绑定）+ 资源池（纹理/Shader/VBO ID）+ 绑定信息
+       - 多线程各自eglMakeCurrent → 存入各自TLS → 状态/资源完全隔离
+       - 共享Context：eglCreateContext传入sharedContext → 资源池共享，状态独立
+         用途：解码线程生产纹理，渲染线程直接消费，无需跨进程拷贝
+
+    5. 代码架构（五层）：
+       - EGLPlayerActivity：业务配置层，创建Drawer，调用setSurface
+       - CustomerGLRenderer：实现SurfaceHolder.Callback，主线程传话筒
+         surfaceCreated/Changed/Destroyed → 转发给RenderThread，自身不碰OpenGL
+       - RenderThread：GL线程大脑，状态机驱动
+         状态：NO_SURFACE/FRESH_SURFACE/SURFACE_CHANGE/RENDERING/SURFACE_DESTROY/STOP
+         wait/notify机制：主线程改状态+notifyGo，GL线程holdOn等待唤醒
+         render()：glClear → drawers.forEach{draw()} → swapBuffers
+       - EGLSurfaceHolder：简化层，封装EGLCore
+         createEGLSurface/makeCurrent/swapBuffers/destroyEGLSurface
+       - EGLCore：EGL14 API原始封装
+         init(createDisplay+createConfig+createContext)
+         createWindowSurface/createOffscreenSurface/makeCurrent/swapBuffers/release
+
+    6. SurfaceView vs GLSurfaceView：
+       - SurfaceView = 毛坯房（只提供Surface+SurfaceHolder.Callback）
+       - GLSurfaceView = 精装修（自动管理EGL+GL线程+渲染循环）
+       - 手写这套代码 = 自己实现GLSurfaceView内部做的事
+
+  # ⭐⭐⭐ 重要：VSync完整执行与通信过程
+    触发阶段：
+      显示器扫描完一帧 → 硬件发出VSync中断 → SurfaceFlinger进程收到
+
+    SurfaceFlinger做两件事（并行）：
+      路线A：通知App进程UI绘制节奏
+        注册阶段用Binder建立连接拿到socket fd
+        → 往socket fd写入VSync事件
+        → App进程Looper的epoll_wait监听fd被唤醒
+        → Choreographer回调
+        → 驱动主线程View动画/invalidate/onDraw
+        → 与GL线程无关
+
+      路线B：自身开始合成（GL线程等的就是这个）
+        acquireBuffer（QUEUED→ACQUIRED）
+        → GPU合成所有Layer
+        → 提交给显示硬件
+        → releaseBuffer（ACQUIRED→FREE）
+        → BufferQueue计数信号量+1
+        → futex_wake唤醒阻塞的GL线程
+
+    GL线程视角（全程）：
+      render() → glDrawArrays → GPU写入默认FBO → 写入GraphicBuffer
+      → eglSwapBuffers
+        → queueBuffer（FREE→QUEUED）
+        → Binder通知SurfaceFlinger"有新帧了"
+        → dequeueBuffer尝试获取FREE buffer
+        → 没有FREE buffer → futex_wait阻塞，加入等待队列
+        → SurfaceFlinger合成完releaseBuffer → 信号量+1
+        → futex_wake唤醒GL线程
+        → dequeueBuffer成功，eglSwapBuffers返回
+      → 下一帧render()开始
+
+    核心通信机制汇总：
+      SurfaceFlinger ↔ App UI：  socket + epoll（事件通知）
+      SurfaceFlinger ↔ GL线程：  BufferQueue计数信号量 + futex（资源等待）
+      GL线程 → SurfaceFlinger：  queueBuffer + Binder（帧提交通知）
+
+  今日正式学习已掌握（2026-03-27）：
+    7. SurfaceView本质：
+       - View树里打洞，独立Surface直连SurfaceFlinger
+       - SurfaceView销毁原因：切后台时WindowManager回收Layer，否则占用合成器资源
+       - 对比TextureView：GPU渲染结果作为纹理贴回View树，支持动画变换，性能略低
+
+    8. eglCreateWindowSurface本质：
+       - 平台适配：封装Android原生Surface，向OpenGL提供平台无关的EGLSurface
+       - 建立与BufferQueue的连接，dequeue第一块GraphicBuffer备用
+       - 运行时：eglSwapBuffers = queueBuffer(提交) + dequeueBuffer(取下一块)
+
+    9. 双/三缓冲与VSync：
+       - 双缓冲：防画面撕裂（前缓冲显示，后缓冲渲染，VSync时交换）
+       - 三缓冲：防GPU空等（渲染超时时第三块buffer让GPU不闲着）
+       - BufferQueue状态：FREE/QUEUED/ACQUIRED，身份随流转变化
+
+    10. VSync完整通信机制（⭐重要，见notes中详细记录）：
+        - 路线A：VSync→SurfaceFlinger→socket→App Looper epoll→Choreographer→UI绘制
+        - 路线B：VSync→SurfaceFlinger合成→releaseBuffer→信号量+1→唤醒GL线程
+        - GL线程：eglSwapBuffers内dequeueBuffer futex_wait，合成完被唤醒
+
+    11. RenderThread状态机：
+        - NO_SURFACE→holdOn，FRESH_SURFACE→创建EGLSurface→holdOn等宽高
+        - SURFACE_CHANGE→glViewport+configWordSize→RENDERING
+        - RENDERING→render()循环，SURFACE_DESTROY→destroy→NO_SURFACE，STOP→release→退出
+        - mHaveBindEGLContext：防EGLSurface重复创建，Surface销毁时重置
+        - mNeverCreateEglContext：防纹理ID重复生成，整个线程生命周期只触发一次
+        - sleep(20)是教学简化，生产级应删除，依赖eglSwapBuffers天然VSync限速
+
+  下次复习重点考察：
+    - EGLConfig具体配置哪些参数，代码怎么写
+    - createOffscreenSurface用途和createWindowSurface的区别
+    - 完整初始化序列：从Activity.onCreate到第一帧渲染的全流程
+    - VSync完整通信路径复述
+
+sub_points:
+  - id: sp1
+    desc: "EGL两大职责：桥接OpenGL与窗口系统（EGLDisplay/EGLConfig/EGLSurface）+ 管理Context（EGLContext）；OpenGL跨平台不认识Android Surface"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp2
+    desc: "FBO结构（指针集合）：FBO自身不存数据，持有attachment插槽；默认FBO(0)→EGL创建color attachment指向GraphicBuffer；自定义FBO→手动挂纹理"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp3
+    desc: "eglMakeCurrent机制：存入线程TLS（Display/Context/draw Surface/read Surface）+ 把默认FBO(0)的color attachment绑定到EGLSurface内GraphicBuffer"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp4
+    desc: "EGLContext=线程隔离工具箱：状态层（着色器/混合模式/FBO绑定）+ 资源池（纹理/Shader/VBO ID）+ 绑定信息；共享Context=资源池共享但状态独立"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp5
+    desc: "五层代码架构：EGLPlayerActivity(业务配置) → CustomerGLRenderer(主线程传话筒) → RenderThread(GL线程状态机) → EGLSurfaceHolder(简化层) → EGLCore(EGL14原始封装)"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp6
+    desc: "VSync完整通信机制：路线A(socket+epoll→App Looper→Choreographer→UI绘制) vs 路线B(合成→releaseBuffer→信号量+1→futex_wake→唤醒GL线程dequeueBuffer)"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp7
+    desc: "SurfaceView本质（打洞+独立Surface直连SurfaceFlinger）vs TextureView（GPU渲染结果作纹理贴回View树，支持动画变换，性能略低）"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp8
+    desc: "eglCreateWindowSurface本质：封装Android原生Surface向OpenGL提供平台无关EGLSurface + 建立BufferQueue连接 + dequeue第一块GraphicBuffer备用"
+    status: good
+    last_reviewed: 2026-03-27
+
+review_sessions:
+  - date: 2026-03-27
+    covered_sub_points: [sp1, sp2, sp4, sp5, sp6, sp7, sp8]
+    result: good
+    score: 4

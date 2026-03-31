@@ -1,0 +1,171 @@
+id: 024
+title: OpenGL视频渲染完整实战
+category: project
+core: true
+level: 1
+review_stage: 0
+status: active
+last_study: 2026-03-27
+next_review: 2026-03-29
+importance: 5
+created: 2026-03-24
+stability_score: 37
+consecutive_success: 1
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-27
+  result: ok
+  score: 3
+  mode: qa
+  weak_points:
+    - updateTexImage位置错误：放在activateTexture内部→正确位置是activateTexture之后单独调用，口诀第④步"取新帧"
+    - API名字持续出错：glEnableVertexAttribArray写成glEnableAtrtib，glVertexAttribPointer写成glMatrixAttrib4fv
+    - 阶段A/B/C/D整体框架掌握扎实，各阶段职责清晰
+  suggested_interval_days: 2
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
+  代码来源：00. learning/learning-behavior-system/code/logcad.md
+  性质：009-023所有音视频+OpenGL知识的综合实战应用
+  前置条件：必须先完成以下全部条目的学习和复习，才能激活本条
+    - 009 MediaCodec编解码原理
+    - 010 音视频基础概念
+    - 011 音视频同步原理
+    - 014 音视频重封装MP4
+    - 017 OpenGL ES零拷贝图形管线
+    - 018 OpenGL ES渲染管线基础
+    - 019 GLSL与Android渲染架构
+    - 020 OpenGL ES纹理系统与绘制模式
+    - 021 双Surface视频渲染架构与FBO
+    - 022 正交投影矩阵与视频比例适配
+    - 023 OpenGL坐标系转换与矩阵GPU传递
+  核心内容：
+    完整代码架构：
+      - IDrawer接口抽象（draw/setTextureID/getSurfaceTexture/release）
+      - VideoDrawer实现（5步渲染流程）
+      - SimpleRender驱动（GLSurfaceView.Renderer三个回调）
+      - Activity组装（Drawer+Renderer+Decoder连接）
+    代码执行流（3线程协作）：
+      1. 主线程：new VideoDrawer → initPos → 注册SurfaceTexture回调 → setRenderer启动GL线程
+      2. GL线程：onSurfaceCreated → glGenTextures → setTextureID → new SurfaceTexture → 回调传出
+      3. 主线程：收到回调 → new Surface(st) → MediaCodec.configure(surface) → 启动解码线程
+      4. GL线程：onSurfaceChanged → glViewport + setWorldSize
+      5. GL线程循环：onDrawFrame → initDefMatrix(一次) → createGLPrg(一次) → activateTexture → updateTexImage → doDraw → swapBuffers
+    三阶段演进：
+      - 阶段一：基础骨架（5步渲染流程，FloatBuffer，着色器编译）
+      - 阶段二：接入视频解码（SurfaceTexture回调跨线程传递，OES纹理）
+      - 阶段三：正交投影矩阵（比例适配，矩阵CPU→GPU传递）
+    关键代码细节：
+      - FloatBuffer用ByteBuffer.allocateDirect分配堆外内存（OpenGL C底层需要）
+      - createGLPrg有if保护只编译一次，useProgram每帧执行
+      - glUniform1i把纹理单元编号传给着色器sampler
+      - glVertexAttribPointer第二个参数2表示xy两个分量
+      - release必须手动调用，GPU资源不受GC管理
+    详细代码执行流：
+      初始化阶段（主线程）：
+        ① new VideoDrawer() → init { initPos() } → 分配FloatBuffer，灌入顶点坐标和纹理坐标
+           此时：mTextureId=-1, mProgram=-1, mSurfaceTexture=null
+        ② drawer.getSurfaceTexture { cb } → 只是存下lambda到mSftCb，还没执行
+        ③ gl_surface.setRenderer(SimpleRender(drawer)) → 创建GL线程，创建EGL上下文，绑定Surface2
+      GL线程初始化阶段：
+        ④ onSurfaceCreated → glGenTextures(1, ids, 0) → 从纹理池申请一个ID（如1）
+        ⑤ mDrawer.setTextureID(1) 进入VideoDrawer：
+           ⑥ mTextureId = 1
+           ⑦ mSurfaceTexture = SurfaceTexture(1)  用纹理ID创建SurfaceTexture
+           ⑧ mSftCb?.invoke(mSurfaceTexture!!)     触发回调，传出SurfaceTexture
+      回调触发（回到主线程）：
+        ⑨ lambda执行：new Surface(st) 用SurfaceTexture创建Surface1（包装producer端）
+        ⑩ initPlayer(surface)：
+           ⑪ new VideoDecoder(path, null, sf) → 内部MediaCodec.configure(format, sf, ...)
+              MediaCodec拿到Surface1，解码输出直写GraphicBuffer
+           ⑫ new AudioDecoder(path)
+           ⑬ videoDecoder.goOn() + audioDecoder.goOn() → 启动解码
+      GL线程继续初始化：
+        ⑭ onSurfaceChanged → glViewport(0, 0, 1080, 1920) 设置视口
+        ⑮ mDrawer.setWorldSize(1080, 1920) → mWorldWidth=1080, mWorldHeight=1920
+      每帧渲染循环（GL线程，反复执行）：
+        ⑯ onDrawFrame → glClear 清屏
+        ⑰ mDrawer.draw() 进入VideoDrawer.draw()：
+           ⑱ initDefMatrix()（只算一次）
+              originRatio=videoW/videoH, worldRatio=screenW/screenH
+              比较后调用Matrix.orthoM设置正交矩阵，之后mMatrix!=null直接return
+           ⑲ createGLPrg()（只编译一次）
+              首次：loadShader×2 → glCreateProgram → glAttachShader×2 → glLinkProgram
+              → glGetAttribLocation("aPosition") → mVertexPosHandler
+              → glGetAttribLocation("aCoordinate") → mTexturePosHandler
+              → glGetUniformLocation("uTexture") → mTextureHandler
+              → glGetUniformLocation("uMatrix") → mVertexMatrixHandler
+              之后跳过编译，每帧执行glUseProgram(mProgram)
+           ⑳ activateTexture()
+              → glActiveTexture(GL_TEXTURE0) 激活0号纹理单元
+              → glBindTexture(OES, mTextureId) 绑定OES纹理到0号
+              → glUniform1i(mTextureHandler, 0) 告诉着色器去0号单元取
+              → glTexParameterf×4 配置缩放滤波+边缘处理
+           ㉑ updateTexture()
+              → mSurfaceTexture.updateTexImage()
+              → 从BufferQueue取最新帧 → EGLImage → 绑定到OES纹理
+              → 无新帧则不做任何事
+           ㉒ doDraw()
+              → glEnableVertexAttribArray×2 启用两个属性通道
+              → glUniformMatrix4fv(矩阵handler, 1, false, mMatrix, 0) 上传正交矩阵
+              → glVertexAttribPointer(顶点handler, 2, FLOAT, false, 0, mVertexBuffer) 绑定顶点数据
+              → glVertexAttribPointer(纹理handler, 2, FLOAT, false, 0, mTextureBuffer) 绑定纹理坐标
+              → glDrawArrays(TRIANGLE_STRIP, 0, 4) 绘制4个顶点
+        绘制后GLSurfaceView自动调用eglSwapBuffers
+        → 交换前后缓冲 → Binder通知SurfaceFlinger → 合成+硬件显示 → 一帧完成
+      三线程协作时序图：
+        主线程                     GL线程                     解码线程
+          ├─ new VideoDrawer         │                          │
+          ├─ initPos                 │                          │
+          ├─ getSurfaceTexture(cb)   │                          │
+          ├─ setRenderer ──────────→ │                          │
+          │                          ├─ onSurfaceCreated        │
+          │                          ├─ glGenTextures           │
+          │                          ├─ setTextureID(id)        │
+          │                          │  ├─ new SurfaceTexture   │
+          │  ←─ cb.invoke(st) ──── │  └─ 触发回调              │
+          ├─ new Surface(st)         │                          │
+          ├─ VideoDecoder(sf) ─────│──────────────────────────→ │
+          ├─ goOn()                  │                          ├─ MediaCodec.start()
+          │                          ├─ onSurfaceChanged        │
+          │                          ├─ setWorldSize            │
+          │                          │                          │
+          │                          ├─ onDrawFrame ←────────── ┤ 解码写入GraphicBuffer
+          │                          │  ├─ initDefMatrix        │
+          │                          │  ├─ createGLPrg          │
+          │                          │  ├─ activateTexture      │
+          │                          │  ├─ updateTexImage       │
+          │                          │  ├─ doDraw               │
+          │                          │  └─ swapBuffers→屏幕     │
+          │                          ├─ onDrawFrame（循环）      │
+
+sub_points:
+  - id: sp1
+    desc: "代码四层架构：IDrawer接口（draw/setTextureID/getSurfaceTexture/release）→ VideoDrawer实现 → SimpleRender驱动 → Activity组装"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp2
+    desc: "三线程协作：主线程初始化Drawer→GL线程创建SurfaceTexture→回调主线程配置MediaCodec→GL线程开始渲染循环"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp3
+    desc: "每帧渲染5步口诀：initDefMatrix(一次) → createGLPrg(一次) → activateTexture → updateTexImage(取新帧) → doDraw → swapBuffers"
+    status: weak
+    last_reviewed: 2026-03-27
+  - id: sp4
+    desc: "关键API细节：glEnableVertexAttribArray启用属性通道、glVertexAttribPointer绑定数据（第2参数=分量数）、glUniform1i传纹理单元编号"
+    status: weak
+    last_reviewed: 2026-03-27
+  - id: sp5
+    desc: "FloatBuffer用ByteBuffer.allocateDirect分配堆外内存（OpenGL C底层需要）；release必须手动调用，GPU资源不受GC管理"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp6
+    desc: "createGLPrg有if保护只编译一次（loadShader→createProgram→attachShader→linkProgram→getAttribLocation×2→getUniformLocation×2）"
+    status: ok
+    last_reviewed: 2026-03-27
+
+review_sessions:
+  - date: 2026-03-27
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
+    result: ok
+    score: 3
