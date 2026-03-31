@@ -152,6 +152,73 @@
 
 ---
 
+## Milestone v1.1: 学习系统基建改造
+
+> 详细文档：[.planning/milestones/v1.1-学习系统基建改造/](.planning/milestones/v1.1-学习系统基建改造/)
+
+### Phase 7: YAML Schema Extension
+
+**Goal:** 每张卡片的 YAML 头部能完整表达动态间隔状态和子知识点追踪，存量卡可按新 schema 迁移
+
+**Plans:** TBD
+
+**Requirements:** GRADUATE-01, GRADUATE-02, GRADUATE-03, SUBPOINT-01, SUBPOINT-02, SUBPOINT-03
+
+**Success Criteria:**
+- [ ] 打开任意一张 YAML 卡片，能看到动态间隔规则字段，consecutive_success 达阈值后 status 变为 archived
+- [ ] consecutive_failures 达退步阈值后 next_review 被重置为短间隔，重新进入高频复习
+- [ ] 任意卡片包含 sub_points 字段，每个子知识点有独立 weak/ok/good 状态，跨会话累计
+
+**Dependencies:** None
+
+---
+
+### Phase 8: Cross-Card Graph Validation
+
+**Goal:** 卡片之间的强关联被显式记录，联合考察可被触发并独立记录，不污染单卡得分
+
+**Plans:** TBD
+
+**Requirements:** GRAPH-01, GRAPH-02, GRAPH-03
+
+**Success Criteria:**
+- [ ] 卡片包含 related_cards 字段，值为强关联的其他卡片 ID 列表
+- [ ] 联合考察覆盖跨卡完整调用链，结果记录在独立日志，单卡 consecutive_success 不变
+
+**Dependencies:** Phase 7
+
+---
+
+### Phase 9: GSD Learning Workflow
+
+**Goal:** 学习一个新模块时有标准文档可遵循，完成后 YAML card 自动进入 active pool
+
+**Plans:** TBD
+
+**Requirements:** WORKFLOW-01, WORKFLOW-02
+
+**Success Criteria:**
+- [ ] 存在标准工作流文档，描述从 GSD milestone 立项到交付 YAML card 的完整步骤
+- [ ] 按文档完成一次新模块学习后，产出的 YAML card 出现在 active pool 队列中
+
+**Dependencies:** Phase 7, Phase 8
+
+---
+
+## Phases
+
+- [ ] **Phase 1: Android 核心原理** — Handler/Binder/View/AMS/ClassLoader 原理体系，P0 必答题全覆盖
+- [ ] **Phase 2: 性能优化** — 启动/内存/卡顿/ANR 完整链路，结合实战数据深化
+- [ ] **Phase 3: 音视频 & OpenGL** — 整理并深化 FFmpeg/OpenGL/EGL 已有积累，打造差异化护城河
+- [ ] **Phase 4: Kotlin & 语言基础** — 协程 CPS 原理/Flow/LiveData/Jetpack 核心机制
+- [ ] **Phase 5: 跨平台** — Flutter 三棵树渲染原理/MethodChannel 底层/HarmonyOS ArkUI
+- [ ] **Phase 6: 面试冲刺** — 答题模板/系统设计题库/项目话术/模拟面试验证
+- [ ] **Phase 7: YAML Schema Extension** — 动态间隔 + 毕业机制 + sub_points 子知识点追踪
+- [ ] **Phase 8: Cross-Card Graph Validation** — related_cards + 跨卡联合考察独立计分
+- [ ] **Phase 9: GSD Learning Workflow** — 新学习模块标准工作流文档
+
+---
+
 ## Progress
 
 | Phase | Notes Complete | Status | Completed |
