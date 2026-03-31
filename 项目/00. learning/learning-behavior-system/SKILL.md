@@ -559,19 +559,22 @@ mood 记录在 joint-review-log.md，不写入单卡 review_sessions。
 
 详细步骤见 [new-module-workflow.md](new-module-workflow.md)。
 
+**工具：** planning-with-files-zh 驱动，`/gsd:note` 收尾留档。
+
 **7步流程：**
 
-1. **立项** — 在 GSD ROADMAP.md 创建新 phase，写 Goal 和 Success Criteria
-2. **学习** — 原始笔记写入 `04. 学习_*/` 目录
-3. **拆解** — 列出 3-8 个独立知识点，每个对应一张 YAML card
-4. **设计 sub_points** — 每个知识点列 3-8 个子知识点
-5. **创建 YAML card** — 放入 `states/active/`，新卡默认 `level:1`、`next_review: 学习日 + 3天`
-6. **校验** — id 唯一、sub_points 已填、related_cards 已参考分组、status: active
-7. **更新 ROADMAP** — 打勾 Success Criteria，标记 phase 完成
+1. **立项** — 在 `task_plan.md` 创建模块任务块，写 Goal 和知识点清单
+2. **学习** — 原始笔记写入 `04. 学习_*/` 目录，更新 `progress.md`
+3. **拆解** — 在 `task_plan.md` 里列出 3-8 个独立知识点 + sub_points 设计
+4. **创建 YAML card** — 放入 `states/active/`，新卡默认 `level:1`、`result:ok`、`next_review: 学习日 + 3天`
+5. **校验** — id 唯一、sub_points 已填、related_cards 已参考分组、status: active
+6. **更新 task_plan.md** — 所有任务标记 complete，记录产出卡片数量
+7. **`/gsd:note` 收尾** — 记录模块名、卡片 id 范围、薄弱点、最近 next_review
 
 **关键约束：**
-- 新卡 `status` 必须是 `active`（不是 `draft` 或其他）才会进入复习队列
+- 新卡 `status` 必须是 `active` 才会进入复习队列
 - `next_review` 必须设置，不能为空，否则不会出现在每日任务中
+- `result` 统一用 `ok`（新卡，刚学，尚不稳定）
 
 ---
 
