@@ -7,44 +7,17 @@ description: 面向 Android 工程师的长期学习行为管理系统。当用�
 
 面向 Android 工程师的一年期学习行为管理系统（支持知识点 + 项目）。
 
-## 目录
+## 参考文档
 
-- [系统本质](#系统本质)
-- [设计哲学](#设计哲学)
-- [与 project-interview-prep 的联动](#与-project-interview-prep-的联动)
-- [目录结构](#目录结构)
-- [状态文件规范](#状态文件规范)
-  - [文件命名](#文件命名)
-  - [YAML 字段定义](#yaml-字段定义)
-- [Level 定义](#level-定义)
-  - [Level 3 的判断标准](#level-3-的判断标准)
-  - [Level 4 的判断标准](#level-4-的判断标准)
-- [复习周期规则](#复习周期规则)
-- [状态转移规则](#状态转移规则)
-  - [状态流转图](#状态流转图)
-  - [自动状态转移](#自动状态转移)
-- [每日任务生成](#每日任务生成)
-  - [触发条件](#触发条件)
-  - [执行流程](#执行流程)
-  - [学习债务提醒机制](#学习债务提醒机制)
-- [用户操作协议](#用户操作协议)
-  - [1. 新增知识点](#1-新增知识点)
-  - [2. 提升 Level](#2-提升-level)
-  - [3. 完成复习](#3-完成复习)
-  - [4. 批量更新](#4-批量更新)
-- [AI 检验机制](#ai-检验机制)
-  - [何时检验](#何时检验)
-  - [如何检验](#如何检验)
-  - [用户权力](#用户权力)
-- [用户权力规则](#用户权力规则)
-- [meta.md 的作用](#metamd-的作用)
-- [长期稳定性原则](#长期稳定性原则)
-- [子知识点追踪规则](#子知识点追踪规则)
-- [跨卡知识图谱规则（v1.1 新增）](#跨卡知识图谱规则v11-新增)
-- [状态签到规则（v1.1 新增）](#状态签到规则v11-新增)
-- [新模块学习工作流（v1.1 新增）](#新模块学习工作流v11-新增)
-- [注意事项](#注意事项)
-- [快速参考](#快速参考)
+| 文档 | 内容 |
+|------|------|
+| SKILL.md（本文件） | 核心规则：字段定义、状态机、调度逻辑、AI 行为约束 |
+| [interval-rules.md](interval-rules.md) | 动态间隔查表、毕业/退步规则 |
+| [sub-points-rules.md](sub-points-rules.md) | sub_points 字段规则、review_sessions 追加规则 |
+| [graph-rules.md](graph-rules.md) | related_cards 字段、联合考察触发与独立记录、MOOD 签到规则 |
+| [joint-review-log.md](joint-review-log.md) | 联合考察独立日志（不影响单卡计分） |
+| [new-module-workflow.md](new-module-workflow.md) | 新模块学习 7 步工作流 |
+| [SKILL-ops.md](SKILL-ops.md) | 操作协议详细版（新增/提升/复习的完整示例流程） |
 
 ---
 
@@ -172,7 +145,7 @@ consecutive_success: 1            # 连续通过次数
 consecutive_failures: 0           # 连续不稳定/失败次数
 last_assessment:
   date: 2026-02-18
-  result: pass                    # fail | weak | pass | good | excellent
+  result: ok                      # good | ok | fail
   score: 3                        # 1-5，便于快速记录
   mode: recall                    # recall | qa | mock_interview | skip_check
   weak_points:
@@ -211,7 +184,7 @@ consecutive_success: 0            # 连续通过次数
 consecutive_failures: 0           # 连续不稳定/失败次数
 last_assessment:
   date: 2026-03-02
-  result: weak                    # fail | weak | pass | good | excellent
+  result: fail                    # good | ok | fail
   score: 2                        # 1-5，便于快速记录
   mode: mock_interview            # recall | qa | mock_interview | skip_check
   weak_points:
@@ -284,107 +257,20 @@ last_assessment:
 - 毕业条件：consecutive_success >= 8 AND 间隔 >= 30 天 → status 变为 archived
 - 退步条件：consecutive_failures >= 3 → next_review 重置为明天
 
-原有 `review_stage` 基准值仍保留作为参考，但以动态间隔查表为准。
+原有 `review_stage` 基准值仍作为参考（0→1天、1→3天、2→7天、3→14天、4→30天），**但 v1.1 以后 `next_review` 以 [interval-rules.md](interval-rules.md) 的查表规则为准**。
 
-采用”基准间隔 + 动态修正”机制，而不是固定天数。
-
-### 基准间隔
-
-`review_stage` 仍然代表大致复习阶段，但只提供基准值：
-
-```
-review_stage 0 → 基准 1天
-review_stage 1 → 基准 3天
-review_stage 2 → 基准 7天
-review_stage 3 → 基准 14天
-review_stage 4 → 基准 30天
-```
-
-### 动态修正输入
-
-`next_review` 必须综合以下因素计算：
-
-1. **当前 level**
-   - level 0-1：说明只是接触或初识，间隔不要拉长
-   - level 2：可以进入短周期复习
-   - level 3：允许按正常基准推进
-   - level 4：根据考核稳定性决定能否放大间隔
-
-2. **本次考核结果**
-   - 由 AI 通过口述、追问、对比题、细节题判断
-   - 统一映射为：
-     - `fail` = 回答错误明显、无法回忆
-     - `weak` = 能答部分，但不稳定、需要提示
-     - `pass` = 基本答对，有少量遗漏
-     - `good` = 回答完整，追问也较稳
-     - `excellent` = 回答完整、准确、能迁移和对比
-
-3. **连续表现**
-   - `consecutive_success`：连续 `pass/good/excellent` 次数
-   - `consecutive_failures`：连续 `fail/weak` 次数
-   - 连续通过越多，才允许逐步拉长
-   - 连续失败时，应缩短间隔，必要时回退阶段
-
-4. **稳定度**
-   - `stability_score`：0-100，表示当前记忆稳定程度
-   - 初始建议 50
-   - 回答好则上升，回答差则下降
-   - 它不是绝对科学值，而是系统内部的“长期表现摘要”
-
-5. **内容权重**
-   - `core=true`：同等表现下更保守，不轻易放太长
-   - `importance` 高：同等表现下优先安排，不延后太久
-   - `category=project`：项目复习要看是否能讲清架构、流程、取舍，不只看概念记忆
-
-### 计算规则
-
-先取 `review_stage` 对应基准天数，再乘以动态系数：
-
-```
-fail      -> 0.5x
-weak      -> 0.8x
-pass      -> 1.0x
-good      -> 1.3x
-excellent -> 1.6x
-```
-
-再叠加稳定度与连续表现修正：
-
-- `consecutive_success >= 3`：额外 `+0.2x`
-- `consecutive_failures >= 2`：额外 `-0.2x`
-- `stability_score >= 80`：额外 `+0.2x`
-- `stability_score <= 40`：额外 `-0.2x`
-- `core=true` 且 `review_stage < 4`：额外 `-0.1x`
-
-最后做边界约束：
-
-- 最小间隔 1 天
-- 普通知识点最大间隔 45 天
-- 核心知识点在进入 `mastered` 前最大间隔 30 天
-- 如果本次结果为 `fail`，允许 `next_review=今天` 或 `明天`
-
-### 状态调整规则
-
-- 每次复习后，不再无条件 `review_stage + 1`
-- 改为：
-  - `excellent/good`：`review_stage +1`（上限 4）
-  - `pass`：`review_stage` 保持不变，或在连续通过 2 次后 `+1`
-  - `weak`：`review_stage` 保持不变
-  - `fail`：`review_stage -1`（下限 0），必要时降回 `active`
-
-- 当 `level=4` 且满足以下条件时才进入 `mastered`：
-  - `review_stage>=4`
-  - `consecutive_success>=3`
-  - `stability_score>=85`
+**v1.1 规则摘要：**
+- `good`（稳定掌握）→ 按 consecutive_success 查表，间隔递增
+- `ok`（部分掌握）→ 查表值，但不超过上次间隔 × 1.3
+- `fail`（明显失误）→ 强制 1 天
+- 毕业：`consecutive_success ≥ 8` 且间隔 ≥ 30 天 → `status: archived`
+- 退步：`consecutive_failures ≥ 3` → 间隔重置为 1 天
 
 ### AI 执行要求
 
 - 每次复习或升级后，AI 必须先给出考核结论，再更新 `next_review`
-- AI 必须在输出中解释：
-  - 本次考核结果是什么
-  - 为什么这样判断
-  - `next_review` 是如何算出来的
-- 如果用户要求跳过检验，AI 仍可更新，但必须标记为 `pass` 以下的保守结果，默认按 `weak` 处理
+- AI 必须在输出中说明：本次结果是什么、为什么、`next_review` 怎么算出来的
+- 跳过检验时，默认按 `ok` 处理，避免间隔拉得过长
 
 ---
 
@@ -393,12 +279,13 @@ excellent -> 1.6x
 ### 状态流转图
 
 ```
-pool (level=0) 
+pool (level=0)
   ↓ 用户开始学习
 active (level 1-3, 正在提升)
-  ↓ 达到 level=4
+  ├─ consecutive_success≥8 且间隔≥30天 → archived（毕业，文件留在 active/，停止出现在复习队列）
+  └─ 达到 level=4
 review (level=4, review_stage 0-3)
-  ↓ review_stage >= 4
+  ↓ review_stage≥4 且 consecutive_success≥3 且 stability_score≥85
 mastered (稳定掌握)
 ```
 
@@ -407,18 +294,18 @@ mastered (稳定掌握)
 **1. active → review**
 - 触发条件：level 提升到 4
 - 操作：移动文件从 states/active/ 到 states/review/
-- 初始化：
-  - `review_stage=0`
-  - `stability_score` 默认 50
-  - `consecutive_success=0`
-  - `consecutive_failures=0`
-  - 完成一次 level 4 检验后，再根据结果计算 `next_review`
+- 初始化：`review_stage=0`、`stability_score=50`、`consecutive_success/failures=0`
 
-**2. review → mastered**
-- 触发条件：level=4 且 review_stage>=4
+**2. active → archived（毕业）**
+- 触发条件：`consecutive_success ≥ 8` 且上次实际间隔 ≥ 30 天
+- 操作：将 `status` 改为 `archived`，**文件留在 states/active/**，不移动
+- 效果：不再出现在每日复习队列，但可手动查询
+
+**3. review → mastered**
+- 触发条件：level=4 且 review_stage≥4 且 consecutive_success≥3 且 stability_score≥85
 - 操作：移动文件从 states/review/ 到 states/mastered/
 
-**3. pool → active**
+**4. pool → active**
 - 触发条件：用户开始学习某个 pool 中的知识点
 - 操作：移动文件从 states/pool/ 到 states/active/
 
@@ -504,291 +391,19 @@ mastered (稳定掌握)
 
 ## 用户操作协议
 
-### 1. 新增知识点
+详细操作流程见 [SKILL-ops.md](SKILL-ops.md)。
 
-**用户输入**：
-```
-新增知识点：Jetpack Compose 状态管理
-```
+**操作类型摘要：**
 
-**AI 执行流程**：
+| 操作 | 触发词示例 | 核心动作 |
+|------|-----------|---------|
+| 新增知识点 | "新增知识点：XXX" | 创建 yaml，直接进 active，next_review = 今天+3天 |
+| 新增项目 | "新增项目：XXX" | category: project，询问代码路径 |
+| 提升 Level | "XXX 提升到 level N" | 先检验，再更新 level + next_review |
+| 完成复习 | "XXX 仅复习" | 考核，更新 consecutive_*/next_review，追加 review_sessions |
+| 批量更新 | 多行指令 | 按顺序依次处理 |
 
-1. 扫描 states/ 下所有 yaml 文件，找到最大序号（例如 004）
-2. 新序号 = 005
-3. 智能推断 category、importance、core：
-   ```
-   我推断这是一个 android 类的知识点，重要性 4，核心知识。
-   是否确认？或者你可以修改。
-   ```
-4. 用户确认或修改：
-   ```
-   确认
-   或
-   改成 architecture, 5, true
-   ```
-5. 创建文件 `states/pool/005-Jetpack-Compose状态管理.yaml`：
-   ```yaml
-   id: 005
-   title: Jetpack Compose 状态管理
-   category: android
-   core: true
-   level: 0
-   review_stage: 0
-   status: pool
-   last_study: null
-   next_review: null
-   importance: 4
-   created: 2026-03-02
-   ```
-6. 告知用户：
-   ```
-   已创建 states/pool/005-Jetpack-Compose状态管理.yaml
-   - id: 005
-   - category: android
-   - importance: 4
-   - core: true
-   - status: pool
-   ```
-
----
-
-### 1.1 新增项目（新增）
-
-**用户输入**：
-```
-新增知识点：视频加水印项目
-或
-新增项目：视频加水印优化
-```
-
-**AI 执行流程**：
-
-1. 扫描 states/ 下所有 yaml 文件，找到最大序号（例如 005）
-2. 新序号 = 006
-3. 智能推断这是一个项目：
-   ```
-   我推断这是一个项目（而非知识点）。
-   请提供项目代码路径（例如：D:\Projects\video-watermark）
-   ```
-4. 用户提供路径：
-   ```
-   D:\Projects\video-watermark
-   ```
-5. 智能推断 importance、core：
-   ```
-   我推断这是一个核心项目，重要性 5。
-   是否确认？或者你可以修改。
-   ```
-6. 用户确认或修改
-7. 创建文件 `states/pool/006-视频加水印项目.yaml`：
-   ```yaml
-   id: 006
-   title: 视频加水印项目
-   category: project
-   core: true
-   level: 0
-   review_stage: 0
-   status: pool
-   last_study: null
-   next_review: null
-   importance: 5
-   created: 2026-03-02
-   project_path: D:\Projects\video-watermark
-   ```
-8. 创建项目笔记目录：
-   ```
-   mkdir notes/006-视频加水印项目/
-   ```
-9. 创建项目状态文件 `notes/006-视频加水印项目/state.yaml`：
-   ```yaml
-   project_id: 006
-   title: 视频加水印项目
-   project_path: D:\Projects\video-watermark
-   current_round: 0
-   tech_stack: []
-   architecture_analyzed: false
-   rounds_completed: []
-   interview_questions:
-     basic: 0
-     deep: 0
-     extend: 0
-   last_updated: 2026-03-02
-   ```
-10. 告知用户：
-    ```
-    已创建项目：视频加水印项目
-    - id: 006
-    - category: project
-    - importance: 5
-    - core: true
-    - status: pool
-    - project_path: D:\Projects\video-watermark
-    - 项目笔记目录：notes/006-视频加水印项目/
-    
-    提示：当你准备学习这个项目时，说"开始学习视频加水印项目"，
-    将自动触发 project-interview-prep skill 进行项目分析和学习。
-    ```
-
----
-
-### 2. 提升 Level
-
-**用户输入**：
-```
-Android生命周期 提升到 level 3
-```
-
-**AI 执行流程**：
-
-1. **检验阶段**（防止等级虚高）：
-   ```
-   好的，请口述一下 Android 生命周期的核心概念
-   ```
-   
-2. **用户口述后，AI 追问**（数量不固定，基于回答完整性）：
-   ```
-   [追问 1] onCreate 和 onStart 的区别是什么？
-   [追问 2] 配置变更时会调用哪些生命周期方法？
-   [追问 3] onSaveInstanceState 在什么时候调用？
-   ```
-
-3. **判断达标**：
-   ```
-   我认为你已经达到 level 3（能完整讲清楚）。是否确认更新？
-   ```
-
-4. **用户确认后，更新文件**：
-   - 读取 states/active/001-Android生命周期.yaml
-   - 更新字段：
-     ```yaml
-     level: 3
-     last_study: 2026-03-02
-     last_assessment:
-       date: 2026-03-02
-       result: good
-       score: 4
-       mode: qa
-       weak_points: []
-       suggested_interval_days: 3
-     ```
-   - 判断状态转移：
-     
-     - 如果 level 变成 4 → 移动到 states/review/
-   
-5. **明确告知**：
-   ```
-   已更新 Android生命周期 到 level 3
-   - level: 2 → 3
-   - last_study: 2026-03-02
-   ```
-   
-   如果发生状态转移：
-   ```
-   已更新 Android生命周期 到 level 4
-   - level: 3 → 4
-   - status: active → review
-   - 文件已移动：states/active/001-Android生命周期.yaml → states/review/001-Android生命周期.yaml
-   - review_stage: 0
-   - assessment_result: pass
-   - next_review: 2026-03-03（基于 stage 0 基准 1 天，按 pass 保守处理）
-   - last_study: 2026-03-02
-   ```
-
----
-
-### 3. 完成复习
-
-**用户输入**：
-```
-Android生命周期 仅复习
-```
-
-**AI 执行流程**：
-
-1. 读取状态文件，判断类型（知识点 or 项目）
-
-2. **执行考核并记录结果**：
-   - 默认必须做一次简短检验，至少包含：
-     - 1 个主问题：让用户口述核心内容
-     - 2-3 个追问：验证细节、边界、对比、易错点
-   - AI 根据回答给出 `fail | weak | pass | good | excellent`
-
-3. **如果是知识点**：
-   - 读取 states/review/001-Android生命周期.yaml
-   - 更新字段：
-     ```yaml
-     review_stage: 2 → 3
-     last_study: 2026-03-02
-     stability_score: 68 → 78
-     consecutive_success: 1 → 2
-     consecutive_failures: 0 → 0
-     last_assessment:
-       date: 2026-03-02
-       result: good
-       score: 4
-       mode: recall
-       weak_points:
-         - onSaveInstanceState 触发时机还不够稳
-       suggested_interval_days: 18
-     next_review: 2026-03-20  # stage 3 基准 14 天 * good(1.3x)，向上取整后约 18 天
-     ```
-   - 判断状态转移：
-     
-     - 如果 level=4 且 review_stage>=4 且 consecutive_success>=3 且 stability_score>=85 → 移动到 states/mastered/
-   - 明确告知：
-     ```
-     已完成 Android生命周期 的复习
-     - assessment_result: good
-     - review_stage: 2 → 3
-     - stability_score: 68 → 78
-     - next_review: 2026-03-20（stage 3 基准 14 天 × good 1.3）
-     - last_study: 2026-03-02
-  ```
-   
-4. **如果是项目**（category: project）：
-   - 读取 states/review/003-视频加水印项目.yaml
-   - 调用 project-interview-prep skill 执行模拟面试
-   - 模拟面试完成后，更新字段：
-     ```yaml
-     review_stage: 2 → 2
-     last_study: 2026-03-02
-     stability_score: 72 → 70
-     consecutive_success: 2 → 0
-     consecutive_failures: 0 → 1
-     last_assessment:
-       date: 2026-03-02
-       result: weak
-       score: 2
-       mode: mock_interview
-       weak_points:
-         - MediaCodec 输入输出队列协作过程解释不完整
-         - 性能优化前后瓶颈对比不够清楚
-       suggested_interval_days: 11
-     next_review: 2026-03-13  # stage 2 基准 7 天 × weak(0.8) 后，再考虑核心项目保守处理
-     ```
-   - 明确告知：
-     ```
-     已完成 视频加水印项目 的复习（模拟面试）
-     - assessment_result: weak
-     - review_stage: 2 → 2
-     - next_review: 2026-03-13（表现不稳定，缩短复习周期）
-     - last_study: 2026-03-02
-     ```
-
----
-
-### 4. 批量更新
-
-**用户输入**：
-```
-Android生命周期 提升到 level 3
-Kotlin协程 仅复习
-新增知识点：ViewModel 原理
-```
-
-**AI 执行流程**：
-
-按顺序处理每个操作，遵循上述各自的流程。
+**result 枚举**（统一）：`good`（稳定）| `ok`（部分）| `fail`（失误）
 
 ---
 
@@ -812,10 +427,10 @@ Kotlin协程 仅复习
 
 3. **输出考核评级**：
    - 必须明确给出：
-     - `result`: fail | weak | pass | good | excellent
+     - `result`: `good`（稳定掌握）| `ok`（部分掌握，有遗漏）| `fail`（回答明显错误或无法回忆）
      - `score`: 1-5
      - `weak_points`: 当前薄弱点
-   - 这个评级将直接影响 `next_review`
+   - 这个评级将直接影响 `next_review`，规则见 [interval-rules.md](interval-rules.md)
 
 4. **判断达标**：
    - 基于 Level 定义的标准
@@ -876,25 +491,7 @@ meta.md 用于记录学习方法反思和系统调整。
 - 系统参数的变化（例如复习周期调整）
 - 长期趋势观察
 
-### 示例内容
-
-```markdown
-# 学习系统调整日志
-
-## 2026-03-02
-- 发现 7 天复习周期对于复杂知识点太短
-- 考虑将 review_stage 2 的周期从 7 天改为 10 天
-- 决定：暂不调整，先观察一个月
-
-## 2026-02-25
-- 发现口述验证效果很好，增加口述频率
-- 核心知识点的 importance 权重应该更高
-- 决定：在优先级计算中，core=true 的权重提升
-
-## 2026-02-20
-- 某些知识点总是学不会，可能需要拆分成更小的知识点
-- 例如：Kotlin协程 → 拆分为"协程基础"、"协程原理"、"Flow"
-```
+格式：按日期分节，每节记录一次系统调整或观察，见实际 meta.md 文件。
 
 ---
 
