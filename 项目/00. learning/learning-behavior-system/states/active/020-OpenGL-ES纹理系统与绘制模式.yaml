@@ -1,0 +1,72 @@
+id: 020
+title: OpenGL ES纹理系统与绘制模式
+category: android
+core: true
+level: 1
+review_stage: 0
+status: active
+last_study: 2026-03-27
+next_review: 2026-04-01
+importance: 4
+created: 2026-03-18
+stability_score: 55
+consecutive_success: 4
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-27
+  result: good
+  score: 4
+  mode: qa
+  weak_points:
+    - OES纹理本质说成"对Surface封装"→更准确是对GraphicBuffer的引用（通过EGLImage），Surface是生产者接口
+  suggested_interval_days: 5
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_01.初步了解OpenGL ES.md
+  对应章节：3.3纹理基础 + 3.3使用纹理显示图片 + 3.5绘制模式
+  前置：019-GLSL与Android渲染架构 学完后再学本条
+  核心内容：
+    1. 纹理三件套：
+       - 纹理对象：GPU显存中存储的图像数据，用ID标识（glGenTextures）
+       - 纹理单元：GPU工作插槽，允许着色器同时采样多纹理（glActiveTexture）
+       - 纹理目标：插槽类型（GL_TEXTURE_2D / GL_TEXTURE_EXTERNAL_OES等）
+    2. 纹理工作流程（5步）：
+       glGenTextures → glActiveTexture → glBindTexture → 配置参数 → glTexImage2D
+       ⚠️ 必须先Active再Bind，Bind永远作用于当前激活的纹理单元
+    3. 绘制模式三种：
+       - GL_TRIANGLES：每3个顶点独立三角形
+       - GL_TRIANGLE_STRIP：复用前2顶点，四边形用4顶点（视频渲染标准）
+       - GL_TRIANGLE_FAN：复用第一个顶点，适合扇形/圆形
+    4. 顶点坐标和纹理坐标顺序必须一一对应，否则图像对角翻转
+    5. OpenGL资源在GPU显存，不受GC管理，必须手动release
+
+sub_points:
+  - id: sp1
+    desc: "纹理三件套：纹理对象（GPU显存图像+ID）、纹理单元（GPU工作插槽）、纹理目标（插槽类型GL_TEXTURE_2D/OES）"
+    status: ok
+    last_reviewed: 2026-03-27
+  - id: sp2
+    desc: "纹理工作流程5步：glGenTextures → glActiveTexture → glBindTexture → 配置参数 → glTexImage2D，必须先Active再Bind"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp3
+    desc: "GL_TEXTURE_EXTERNAL_OES本质：对GraphicBuffer的引用（通过EGLImage），不是对Surface的封装，Surface是生产者接口"
+    status: weak
+    last_reviewed: 2026-03-27
+  - id: sp4
+    desc: "绘制模式三种：GL_TRIANGLES（每3顶点独立）、GL_TRIANGLE_STRIP（复用前2顶点，视频渲染标准）、GL_TRIANGLE_FAN（复用第一顶点）"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp5
+    desc: "顶点坐标与纹理坐标必须一一对应，否则图像对角翻转"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp6
+    desc: "OpenGL资源在GPU显存，不受GC管理，必须手动调用release"
+    status: good
+    last_reviewed: 2026-03-27
+
+review_sessions:
+  - date: 2026-03-27
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
+    result: good
+    score: 4

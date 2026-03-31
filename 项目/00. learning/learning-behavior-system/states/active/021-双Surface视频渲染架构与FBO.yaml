@@ -1,0 +1,95 @@
+id: 021
+title: 双Surface视频渲染架构与FBO
+category: android
+core: true
+level: 2
+review_stage: 0
+status: active
+last_study: 2026-03-27
+next_review: 2026-04-01
+importance: 5
+created: 2026-03-24
+stability_score: 65
+consecutive_success: 3
+consecutive_failures: 0
+last_assessment:
+  date: 2026-03-27
+  result: good
+  score: 4
+  mode: qa
+  weak_points:
+    - 默认FBO color attachment说"指向Surface"→更准确是指向GraphicBuffer（Surface背后的内存块）
+  suggested_interval_days: 5
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
+  对应章节：3.1原理分析 + 3.2实际代码
+  前置：017零拷贝图形管线 + 018渲染管线基础 + 019GLSL架构 + 020纹理系统
+  核心内容：
+    1. 为什么需要双Surface：
+       - 静态图片：texImage2D一次性上传，可行
+       - 视频60fps：每帧8MB，480MB/s总线传输+频繁GC，不可行
+       - 解决方案：零拷贝 + 双Surface架构
+    2. 双Surface角色：
+       - Surface1（输入）：MediaCodec输出→BufferQueue→SurfaceTexture→OES纹理，GPU的数据来源
+       - Surface2（输出）：GLSurfaceView自带，EGL绑定为默认帧缓冲，GPU渲染结果→swap→SurfaceFlinger→屏幕
+       - 本质：Surface1是OpenGL的输入，Surface2是OpenGL的输出，不能合一
+    3. 四阶段渲染流程：
+       - 阶段一：MediaCodec硬件解码→写入Surface1的GraphicBuffer
+       - 阶段二：SurfaceTexture.updateTexImage()→EGLImage→绑定OES纹理（零拷贝）
+       - 阶段三：GPU执行GLSL着色器，从OES纹理采样，渲染到Surface2帧缓冲
+       - 阶段四：eglSwapBuffers→Binder→SurfaceFlinger合成→屏幕
+    4. Surface1创建流程（涉及跨线程）：
+       - GL线程：glGenTextures→new SurfaceTexture(texId)→callback传出
+       - 主线程：收到SurfaceTexture→new Surface(st)→mediaCodec.configure(surface)
+       - 为什么需要回调：SurfaceTexture必须在GL线程创建（绑定纹理），MediaCodec在主线程配置
+    5. Surface2创建：GLSurfaceView自动完成，内部通过eglCreateWindowSurface绑定
+    6. 代码差异（vs静态图片）：
+       - 片元着色器：#extension GL_OES_EGL_image_external + samplerExternalOES
+       - 多了SurfaceTexture初始化和回调传递
+       - onDrawFrame中调用updateTexImage()更新每帧
+    7. FBO离屏渲染：
+       - FBO是容器（画架），纹理附件是存储（画布）
+       - 创建：glGenFramebuffers→glGenTextures→glFramebufferTexture2D挂载
+       - 切换：glBindFramebuffer(fboId)画到FBO，glBindFramebuffer(0)画到屏幕
+       - FBO输出到纹理（GPU内部，不上屏），Surface2输出到屏幕（跨进程）
+       - 滤镜链：OES→FBO1→FBO2→...→默认帧缓冲(Surface2)→屏幕
+    8. 移动端统一内存架构（UMA）：
+       - 手机GPU集成在SoC中，和CPU共用同一块物理RAM，无独立VRAM
+       - GraphicBuffer通过ION/gralloc分配，是物理内存中的跨进程跨硬件共享缓冲区
+       - 零拷贝成立原因：解码器和GPU访问的是同一块物理内存
+
+sub_points:
+  - id: sp1
+    desc: "双Surface必要性：视频60fps每帧8MB，直接texImage2D传输480MB/s+频繁GC不可行，需零拷贝+双Surface架构"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp2
+    desc: "双Surface角色：Surface1（输入）MediaCodec→BufferQueue→SurfaceTexture→OES纹理；Surface2（输出）GLSurfaceView默认帧缓冲→屏幕"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp3
+    desc: "四阶段渲染：MediaCodec硬解→写GraphicBuffer → updateTexImage零拷贝→OES纹理 → GLSL采样渲染 → eglSwapBuffers→SurfaceFlinger"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp4
+    desc: "Surface1创建流程：GL线程创SurfaceTexture→回调传主线程→new Surface(st)→MediaCodec.configure(surface)（SurfaceTexture必须在GL线程创建）"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp5
+    desc: "默认FBO(0) color attachment指向GraphicBuffer（物理内存块），不是Surface（Surface是生产者接口）"
+    status: weak
+    last_reviewed: 2026-03-27
+  - id: sp6
+    desc: "FBO离屏渲染：FBO是容器（画架），纹理附件是存储（画布）；glBindFramebuffer(0)画到屏幕，滤镜链OES→FBO1→FBO2→默认帧缓冲"
+    status: good
+    last_reviewed: 2026-03-27
+  - id: sp7
+    desc: "UMA统一内存架构：手机GPU集成SoC共用物理RAM，GraphicBuffer通过ION/gralloc分配，解码器和GPU访问同一物理内存实现零拷贝"
+    status: good
+    last_reviewed: 2026-03-27
+
+review_sessions:
+  - date: 2026-03-27
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6, sp7]
+    result: good
+    score: 4
