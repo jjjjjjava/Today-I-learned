@@ -2,15 +2,15 @@
 
 ## 毕业与间隔机制（GRADUATE）
 
-- [ ] **GRADUATE-01**: 系统根据 consecutive_success 自动拉长 next_review 间隔，不使用固定 level 映射
-- [ ] **GRADUATE-02**: 卡片达到毕业阈值（consecutive_success ≥ N，间隔 ≥ X 天）后自动移入 archived 状态
-- [ ] **GRADUATE-03**: 表现差时（consecutive_failures ≥ 阈值）自动缩短间隔，拉回高频复习
+- [x] **GRADUATE-01**: 系统根据 consecutive_success 自动拉长 next_review 间隔，不使用固定 level 映射
+- [x] **GRADUATE-02**: 卡片达到毕业阈值（consecutive_success ≥ N，间隔 ≥ X 天）后自动移入 archived 状态
+- [x] **GRADUATE-03**: 表现差时（consecutive_failures ≥ 阈值）自动缩短间隔，拉回高频复习
 
 ## 子知识点追踪（SUBPOINT）
 
-- [ ] **SUBPOINT-01**: YAML 卡片支持 sub_points 字段，列出该卡的独立子知识点
-- [ ] **SUBPOINT-02**: 每次复习记录本次覆盖了哪些 sub_points，未覆盖的保留待下次
-- [ ] **SUBPOINT-03**: sub_points 有独立的 weak/ok/good 状态，跨多次复习累计追踪
+- [x] **SUBPOINT-01**: YAML 卡片支持 sub_points 字段，列出该卡的独立子知识点
+- [x] **SUBPOINT-02**: 每次复习记录本次覆盖了哪些 sub_points，未覆盖的保留待下次
+- [x] **SUBPOINT-03**: sub_points 有独立的 weak/ok/good 状态，跨多次复习累计追踪
 
 ## 跨卡知识图谱（GRAPH）
 
@@ -44,12 +44,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRADUATE-01 | Phase 7 | Pending |
-| GRADUATE-02 | Phase 7 | Pending |
-| GRADUATE-03 | Phase 7 | Pending |
-| SUBPOINT-01 | Phase 7 | Pending |
-| SUBPOINT-02 | Phase 7 | Pending |
-| SUBPOINT-03 | Phase 7 | Pending |
+| GRADUATE-01 | Phase 7 | Complete (07-01) |
+| GRADUATE-02 | Phase 7 | Complete (07-01) |
+| GRADUATE-03 | Phase 7 | Complete (07-01) |
+| SUBPOINT-01 | Phase 7 | Complete (07-01) |
+| SUBPOINT-02 | Phase 7 | Complete (07-01) |
+| SUBPOINT-03 | Phase 7 | Complete (07-01) |
 | GRAPH-01 | Phase 8 | Pending |
 | GRAPH-02 | Phase 8 | Pending |
 | GRAPH-03 | Phase 8 | Pending |

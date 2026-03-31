@@ -28,7 +28,7 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — 创建动态间隔规则文档和子知识点追踪规则文档
+- [x] 07-01-PLAN.md — 创建动态间隔规则文档和子知识点追踪规则文档
 - [ ] 07-02-PLAN.md — 为第一批 7 张卡片（009-019）添加 sub_points/review_sessions + 更新 SKILL.md
 - [ ] 07-03-PLAN.md — 为第二批 8 张卡片（020-027）添加 sub_points/review_sessions
 
@@ -58,6 +58,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 7. YAML Schema Extension | 0/3 | Planned | - |
+| 7. YAML Schema Extension | 1/3 | In Progress | - |
 | 8. Cross-Card Graph Validation | 0/? | Not started | - |
 | 9. GSD Learning Workflow | 0/? | Not started | - |
