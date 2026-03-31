@@ -160,7 +160,7 @@
 
 **Goal:** 每张卡片的 YAML 头部能完整表达动态间隔状态和子知识点追踪，存量卡可按新 schema 迁移
 
-**Plans:** TBD
+**Plans:** 3/3 plans complete
 
 **Requirements:** GRADUATE-01, GRADUATE-02, GRADUATE-03, SUBPOINT-01, SUBPOINT-02, SUBPOINT-03
 
@@ -213,7 +213,7 @@
 - [ ] **Phase 4: Kotlin & 语言基础** — 协程 CPS 原理/Flow/LiveData/Jetpack 核心机制
 - [ ] **Phase 5: 跨平台** — Flutter 三棵树渲染原理/MethodChannel 底层/HarmonyOS ArkUI
 - [ ] **Phase 6: 面试冲刺** — 答题模板/系统设计题库/项目话术/模拟面试验证
-- [ ] **Phase 7: YAML Schema Extension** — 动态间隔 + 毕业机制 + sub_points 子知识点追踪
+- [x] **Phase 7: YAML Schema Extension** — 动态间隔 + 毕业机制 + sub_points 子知识点追踪 (completed 2026-03-31)
 - [ ] **Phase 8: Cross-Card Graph Validation** — related_cards + 跨卡联合考察独立计分
 - [ ] **Phase 9: GSD Learning Workflow** — 新学习模块标准工作流文档
 
