@@ -2,25 +2,24 @@ id: 019
 title: GLSL与Android渲染架构
 category: android
 core: true
-level: 1
-review_stage: 0
+level: 2
+review_stage: 1
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-30
+last_study: 2026-04-02
+next_review: 2026-04-09
 importance: 5
 created: 2026-03-18
-stability_score: 60
-consecutive_success: 2
+stability_score: 72
+consecutive_success: 4
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
+  date: 2026-04-02
   result: good
   score: 4
-  mode: qa
+  mode: level_up
   weak_points:
-    - uniform变量说"需要varying中转"→uniform直接在片元着色器声明即可，不经顶点着色器
-    - 整体概念掌握扎实
-  suggested_interval_days: 3
+    - 着色器编译调试API（glGetShaderiv + glGetShaderInfoLog）不熟
+  suggested_interval_days: 7
 related_cards: [18, 23]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_01.初步了解OpenGL ES.md
@@ -48,34 +47,7 @@ notes: |
     onDrawFrame = Renderer回调（GL渲染节拍）
     两者通过flag桥接
 
-sub_points:
-  - id: sp1
-    desc: "GLSL三种变量：attribute（per-vertex输入）、uniform（全局常量）、varying（顶点→片元桥梁）"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "uniform变量直接在片元着色器声明，不需要varying中转"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "着色器程序三阶段：A编译(createShader+shaderSource+compileShader) → B组装(createProgram+attachShader+linkProgram) → C使用"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "Android四层渲染架构：Activity → GLSurfaceView → SimpleRenderer → IDrawer → 具体Drawer"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "GLSurfaceView两种渲染模式：CONTINUOUSLY（VSync限速）vs WHEN_DIRTY（requestRender唤醒）"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp6
-    desc: "onFrameAvailable vs onDrawFrame：前者是解码写帧通知，后者是GL渲染节拍，通过flag桥接"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
-    result: good
-    score: 4
+  重要澄清（2026-04-02 升level时）：
+    varying 不是 attribute "变成"的，是在顶点着色器里主动赋值的：
+    vCoordinate = aCoordinate;  ← 主动赋值，不是自动转换
+    然后经过光栅化插值，片元着色器读取插值后的结果

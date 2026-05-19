@@ -1,0 +1,38 @@
+id: 030
+title: ANR基础概念与埋雷拆雷爆雷模型
+category: android
+core: true
+level: 1
+review_stage: 3
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-30
+importance: 5
+created: 2026-04-13
+stability_score: 85
+consecutive_success: 5
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 21
+related_cards: [031, 032]
+notes: |
+  学习来源：04. 学习_性能优化/ANR_01.基础概念.md §02
+  本卡覆盖：基本模型(老师-学生-闹钟) / 观测者跨进程必要性 /
+  postDelayed定时机制 / Binder同步阻塞 / 4类雷独立计时
+  未覆盖：Service源码细节(待031) / 4类ANR对比(待续讲)
+
+  提问模式复习题（2026-04-13）：
+    Q1. ANR的"观测者"为什么必须运行在system_server进程，而不能放在App进程内部？
+    Q2. Handler.postDelayed(msg, 20000)埋下炸弹后，如果App主线程被完全卡死，
+        这个20s计时还会准时触发吗？为什么？
+    Q3. App调用startService()时会把ApplicationThread传给AMS。ApplicationThread
+        是什么？它和App主线程是什么关系？
+    Q4. AMS把炸弹埋在ProcessRecord上(按进程)。如果同一个进程里有两个Service
+        同时启动，炸弹是几颗？拆雷的判断逻辑是什么？
+    Q5. Binder调用默认是同步的。App主线程调用AMS.startService()，这个Binder
+        调用期间，主线程处于什么状态？这会触发ANR吗？为什么？
+        (关键认知：取决于卡住位置在埋弹前/后；埋弹前仅Input ANR，
+         埋弹后Input先炸5s，Service后炸20s)

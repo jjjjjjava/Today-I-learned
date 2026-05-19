@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.khronos.org)",
+      "WebFetch(domain:wikis.khronos.org)",
+      "WebFetch(domain:yjy239.github.io)",
+      "WebFetch(domain:deepwiki.com)",
+      "Skill(planning-with-files-zh)",
+      "Skill(planning-with-files-zh:*)"
+    ]
+  }
+}

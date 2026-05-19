@@ -1,0 +1,7 @@
+{
+  "env": {
+    "ANTHROPIC_API_KEY": "sk-srCQolujCC58OlMXCww4w4AXhc44hnVN1mxtPbr5eStgD3FU",
+    "ANTHROPIC_BASE_URL": "http://35.209.70.11/v1"
+  },
+  "model": "claude-sonnet-4-5-20250929"
+}

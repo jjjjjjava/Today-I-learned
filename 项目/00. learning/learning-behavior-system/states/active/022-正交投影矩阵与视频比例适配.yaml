@@ -5,22 +5,21 @@ core: true
 level: 1
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-31
+last_study: 2026-04-01
+next_review: 2026-04-06
 importance: 5
 created: 2026-03-24
-stability_score: 55
-consecutive_success: 3
+stability_score: 58
+consecutive_success: 4
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
-  result: good
-  score: 4
-  mode: qa
+  date: 2026-04-01
+  result: ok
+  score: 3
+  mode: recall
   weak_points:
-    - orthoM初始表述"让y轴占据NDC的28%"→方向稍反，是扩大NDC范围使视频只占28%，自行纠正后理解正确
-    - orthoM本质=修改视频坐标系到NDC的映射关系，表述已清晰
-  suggested_interval_days: 4
+    - 需要引导才能表述清楚orthoM方向（自己说时仍有些反）
+  suggested_interval_days: 5
 related_cards: [23, 24, 26]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
@@ -55,35 +54,3 @@ notes: |
        - actualRatio=2.0/0.5625=3.555
        - orthoM(-1,1,-3.555,3.555,-1,3) → Y轴缩小到28%
     7. 四种场景都适用同一逻辑：横屏+扁视频、横屏+高视频、竖屏+扁视频、竖屏+高视频
-
-sub_points:
-  - id: sp1
-    desc: "变形原因：OpenGL NDC[-1,1]无脑映射到屏幕全部像素，不管视频原始比例，需正交投影矩阵控制缩放"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "4×4矩阵与齐次坐标：3×3只能缩放旋转，加第4维w=1后最后一列×w产生加法，一次乘法实现缩放+旋转+平移"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "orthoM本质：扩大NDC范围（而非缩小画面），NDC[-3.555,3.555]映射到屏幕全部像素，画面[-1,1]只占28%"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "orthoM矩阵结构：X轴缩放=2/(right-left)，Y轴缩放=2/(top-bottom)；bottom=-3.555,top=3.555 → Y缩放0.28"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "比例计算：videoRatio=宽/高，screenRatio=宽/高，相除得actualRatio作为NDC扩大倍数；视频更扁→缩高度，视频更高→缩宽度"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp6
-    desc: "实例：1000×500视频在1080×1920屏幕，videoRatio=2.0, screenRatio=0.5625, actualRatio=3.555 → orthoM Y轴缩到28%"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
-    result: good
-    score: 4

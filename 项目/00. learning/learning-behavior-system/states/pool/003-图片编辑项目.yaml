@@ -1,0 +1,23 @@
+﻿id: 003
+title: 图片编辑项目
+category: project
+core: true
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 5
+created: 2026-03-02
+project_path: D:\Develop\Today-I-learned\项目\00. learning\learning-behavior-system\code\图片编辑.diff
+stability_score: 50
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: weak
+  score: 2
+  mode: skip_check
+  weak_points: []
+  suggested_interval_days: null
+notes: OpenGL ES实现箭头和矩形绘制，包含Shader、FBO、工具切换协调器等核心技术

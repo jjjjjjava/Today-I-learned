@@ -1,0 +1,74 @@
+id: 036
+title: 启动类型与测量口径
+category: android
+core: true
+level: 1
+review_stage: 1
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-16
+importance: 5
+created: 2026-04-20
+stability_score: 70
+consecutive_success: 3
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 7
+weak_points:
+  - 线下线上必须使用同一套口径，混用会导致误判（易遗漏）
+related_cards: [037, 038, 039, 040, 041]
+notes: |
+  学习来源：Android 启动优化模块 轮次1（Claude教授）
+  本卡覆盖：冷/温/热启动类型判定 / TTID / TTFD / 双端口径错位 / 口径选型原则
+
+  ========== 一、三种启动类型 ==========
+  判定维度：进程是否存活 × Activity 是否存活
+
+  冷启动：进程不存在，需 Zygote fork → 最重，优化默认指冷启动
+  温启动：进程存在，Activity 被系统回收（内存紧张） → 重建 Activity（onCreate→onStart→onResume）
+  热启动：进程 + Activity 均存活（后台切回） → 只走 onRestart→onStart→onResume，最快
+
+  ⚠️ onResume ≠ 启动完成，首帧上屏还和视图树层级有关，层级越深渲染越慢
+
+  ========== 二、TTID — Time To Initial Display ==========
+  含义：从启动到首帧上屏的耗时
+  终点：WMS 收到首帧提交 → 通知 AMS → logcat 自动打印
+       "Displayed com.xxx/.SplashActivity: +1s234ms"
+  特点：
+    - 无需开发者埋点，系统自动记录
+    - 首帧可能只有布局骨架，数据未必加载完
+    - TTID 记录的是启动 Activity（通常是 SplashActivity）的首帧
+
+  ========== 三、TTFD — Time To Fully Drawn ==========
+  含义：从启动到内容完全可用的耗时
+  终点：开发者主动调用 reportFullyDrawn()
+       调用时机：首屏数据回来 + 列表渲染稳定
+  特点：
+    - 不调用 = 系统不知道终点，Google Play Console 无 TTFD 数据 = 监控盲区
+    - 调用后系统打印 "Fully drawn com.xxx/.MainActivity: +2s678ms"
+
+  记忆口诀：TTID 是「有骨架」，TTFD 是「有肉」
+
+  ========== 四、双端口径错位 ==========
+  系统口径（am start -W 的 TotalTime）：
+    起点：AMS 收到 startActivity 请求
+    终点：首帧上屏（TTID）
+
+  应用口径（自埋点）：
+    起点：attachBaseContext（晚于系统起点，Zygote fork 那段不可见）
+    终点：reportFullyDrawn() 或自定义结束点（晚于系统终点）
+
+  关系式：
+    应用口径 = 系统口径 - 起点段（Zygote fork + 系统调度）+ 尾部段（TTID→reportFullyDrawn）
+    两者不是简单大小关系，不能直接比较，不能混用
+
+  ⚠️ 常见误解："应用口径 = 系统口径 - Zygote fork"
+     方向错了！差值的主要来源在末端（reportFullyDrawn 延后），不在起点
+
+  ========== 五、口径选型原则 ==========
+  竞品横向对比  → 系统口径（am start -W）：基线统一，不受各家埋点姿势影响
+  自身瓶颈诊断  → 应用口径：覆盖「用户真正能用」那段，能优化的都在这里
+  ⚠️ 线下/线上必须用同一套，混用会出现「线下劣化100ms，线上实际快50ms」的误判

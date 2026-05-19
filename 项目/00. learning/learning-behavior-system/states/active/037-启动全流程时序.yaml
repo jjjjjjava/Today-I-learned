@@ -1,0 +1,179 @@
+id: 037
+title: 启动全流程时序
+category: android
+core: true
+level: 1
+review_stage: 1
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-14
+importance: 5
+created: 2026-04-20
+stability_score: 78
+consecutive_success: 0
+consecutive_failures: 1
+last_assessment:
+  date: 2026-05-09
+  result: ok
+  mode: review
+  suggested_interval_days: 5
+  notes: |
+    阶段1-3 主干扎实（80%/75%/88%），阶段4 明显回退（65%），阶段5 概念正确但术语有误（75%）
+    用户主动补齐了 Window/View三层结构 和 Vsync-epoll 机制，深层认知到位
+    但阶段4连续两次漏掉 Instrumentation 角色，setContentView 三阶段完全没提
+weak_points:
+  # 标注规则：
+  # ✓×N (最近:date) 表示累计答对次数与最近成功日期；至少连续 3 次答对才考虑降级
+  # ✗ 表示最近一次复习仍弱
+  # 不论是否答对，所有条目长期保留，每次复习仍要抽查防止回退
+
+  # ========== 阶段1：进程创建 ==========
+  - "[阶段1] Binder 调用链具体 API：Activity.startActivity → Instrumentation.execStartActivity → ActivityTaskManager.getService().startActivity（Android 10+）。Instrumentation 是中间层，getService() 拿到的是 Binder 代理 ✓×1 (最近:2026-05-09，方法名精度仍待巩固)"
+  - "[阶段1] ATMS vs AMS 职责边界：ATMS 管 Activity/Task 调度（Android 10+ 拆出来），AMS 管进程生命周期。拉新进程是 AMS 的活：ATMS 判断需要进程 → 回调 AMS.startProcessLocked → Process.start → ZygoteProcess → Socket。不要默认'ATMS 直接调 Zygote' ✓×1 (最近:2026-05-09)"
+  - "[阶段1] Zygote 不开 Binder 的根因：①Binder 驱动状态绑定进程，fork 克隆会乱（用户态线程丢失但 fd 被继承导致内核态登记还在 → 账实不符）②多线程 fork 不安全，其他线程持有的锁被克隆进子进程永远不释放。不要停留在'多线程 fork 会死锁'的泛泛回答 ✓×1 (最近:2026-05-09)"
+  - "[阶段1][❌易错] fork 返回值方向曾写反：=0 是子进程走 ActivityThread.main，>0 是父进程（Zygote）拿到子进程 pid，<0 失败。Linux fork 基础语义，面试写反扣分 ✓×1 (最近:2026-05-09)"
+  - "[阶段1][❌易错] fork 后子进程精确顺序：先关 Zygote Server Socket fd → ZygoteInit.handleChildProc → 反射 ActivityThread.main。先关 fd，再进 main ✓×1 (最近:2026-05-09)"
+
+  # ========== 阶段2：主线程建立 + 双向 Binder 通道 ==========
+  - "[阶段2] main() 精确四步顺序：①Looper.prepareMainLooper ②new ActivityThread（同时字段初始化 ApplicationThread / mH）③attach(false) ④Looper.loop()。曾漏首尾两步 ✗ (2026-05-09 又漏 Looper.loop())"
+  - "[阶段2] attach(false) 内部动作：getService 拿 AMS 代理 → attachApplication(mAppThread) 把 ApplicationThread 上交给 AMS ✗ (2026-05-09 用户声称记得，但答案中未明确说出 getService 这一步)"
+  - "[阶段2] AMS 把 ApplicationThread 代理保存到对应的 ProcessRecord.thread 字段 ✓×1 (最近:2026-05-09)"
+  - "[阶段2] ServiceManager（handle=0）是拿任何系统服务 Binder 的统一入口 (2026-05-09 跳过未答)"
+  - "[阶段2][❌易错] AMS 端方法名是 attachApplication，不是 attach ✓×1 (最近:2026-05-09)"
+  - "[阶段2][❌易错] 不要说成 application.attach —— 此时 Application 尚未创建，attach 是 ActivityThread 的方法"
+  - "[阶段2][❌易错] ApplicationThread 和 mH 是 ActivityThread 的字段初始化产物，不是 main() 里单独的步骤"
+
+  # ========== 阶段3：Application 初始化 ==========
+  - "[阶段3] 术语：bindApplication / H.BIND_APPLICATION（不是 createApplication，严重术语错误）✓×1 (最近:2026-05-09)"
+  - "[阶段3] Binder 线程池启动时机：在 native onZygoteInit 里，早于 ActivityThread.main()。不是'loop 之前' (2026-05-09 跳过未答)"
+  - "[阶段3] 执行链精度：LoadedApk.makeApplication → Instrumentation.newApplication（反射） → Application.attach（包私有） → attachBaseContext（用户回调）✗ (2026-05-09 框架对但术语仍错为 loadApk)"
+  - "[阶段3] ContentProvider 入口方法名：installContentProviders ✗ (2026-05-09 仍未主动说出方法名)"
+  - "[阶段3] LoadedApk 抽象：持有 ClassLoader / Resources / ApplicationInfo / Application 实例。容易没主动提 ✗ (2026-05-09 仍说成 loadApk)"
+  - "[阶段3][⚠️⚠️ 反复弱点] Instrumentation 角色定位：不是中转，是【ActivityThread 调用用户代码的统一入口】。所有'反射 new + 调用生命周期'都从它走（newApplication / newActivity / callActivityOnCreate/Start/Resume / callApplicationOnCreate）。Espresso、AndroidJUnitRunner 能拦截生命周期的根因 ⚠️ (2026-05-09 用户声明'不深究方法名细节'，仅概念理解到位)"
+
+  # ========== 阶段4：Activity 启动 ==========
+  - "[阶段4][⚠️ 术语] LAUNCH_ACTIVITY 消息名：曾说成 Create_Activity ✓×1 (最近:2026-05-09)"
+  - "[阶段4] performLaunchActivity 5步顺序：①createContext ②反射 newActivity ③Activity.attach（绑 Context + new PhoneWindow）④setTheme ⑤Activity.onCreate ✗ (2026-05-09 漏 setTheme，用户认为不关键)"
+  - "[阶段4] setContentView 三阶段：①installDecor（new DecorView + 选系统布局模板 + 找 mContentParent）②LayoutInflater.inflate（解析 XML + 反射 new View + addView）③返回（View 树挂好但不跑 measure）✗ (2026-05-09 第3阶段表述偏差：把'未连 ViewRootImpl/WMS'误说为'未连 PhoneWindow')"
+  - "[阶段4][反直觉考点] setContentView 不跑 measure：之后 view.width == 0，真正 measure 在阶段5的 performTraversals ✓×1 (最近:2026-05-09)"
+  - "[阶段4][反直觉考点] onCreate/onStart/onResume 在同一条 LAUNCH_ACTIVITY 消息内连续执行，中间 Looper 不取新消息 → onCreate 里 handler.post 的任务要等 onResume 跑完后才执行 ✓×1 (最近:2026-05-09，但未主动说出 why)"
+
+  # ========== 阶段5：渲染管线 ==========
+  - "[阶段5][❌易错] performTraversals 不走 Binder：在应用进程主线程的 ViewRootImpl 直接执行。Vsync 通过 Choreographer 接收（不是中断），监听 SurfaceFlinger 推送的 fd，与 Looper 共享 epoll_wait ✓×1 (最近:2026-05-09，机制讲透)"
+  - "[阶段5] Window/View/ViewRootImpl 三层创建时机：attach 创建 PhoneWindow → setContentView 创建 DecorView 树 → handleResumeActivity 调用 WindowManager.addView 创建 ViewRootImpl（不在 onResume 内）✓×1 (最近:2026-05-09，补全后掌握)"
+  - "[阶段5] 渲染管线 ViewRootImpl 创建节点（onResume 返回后 WindowManager.addView）✓×1 (历史轮次答对，2026-05-09 复习仍记得)"
+  - "[阶段5] Draw 步骤产出 DisplayList 而非直接 OpenGL 指令，RenderThread 才做翻译 ✓×1 (历史轮次答对，2026-05-09 复习仍记得)"
+  - "[阶段5] SurfaceFlinger 合成层易遗漏 ✓×1 (历史轮次答对，2026-05-09 复习仍记得)"
+  - "[阶段5] RenderThread 三角色分工：主线程录、RenderThread 翻译、GPU 执行 ✓×1 (历史轮次答对，2026-05-09 复习仍记得)"
+related_cards: [036, 038, 039, 040, 041]
+notes: |
+  学习来源：Android 启动优化模块 轮次2（Claude教授 + 用户推导校准）
+  原始笔记：04. 学习_性能优化/启动优化_03.启动流程.md（16阶段，全部已推导校准）
+  本卡覆盖：从用户点击图标到首帧上屏的完整链路
+
+  ========== 一、进程创建链路 ==========
+  Launcher → Binder → AMS/ATMS → socket → Zygote fork → App 进程
+
+  Android 10 分家：ATMS 管 Activity/Task 栈，AMS 管进程创建和生命周期分发
+  Zygote 预加载 ART + framework 类/库，fork 出的子进程直接继承，无需重做重量级初始化
+
+  为什么 AMS→Zygote 用 socket 不用 Binder：
+    1. Binder 驱动状态与进程绑定，fork 会克隆状态导致内核混乱
+    2. 多线程 fork 不安全，其他线程持有的锁被克隆进子进程永远不释放
+  策略：Zygote 一辈子不开 Binder，子进程自己初始化 Binder 线程池
+
+  fork 返回值：0 = 子进程（新生儿），> 0 = 父进程持有的子 pid，< 0 = fork 失败
+  ⚠️ 不要混淆 fork 返回值和 getpid()，子进程的真实 pid 要调 getpid() 才知道
+
+  ========== 二、主线程建立 + 双向 Binder 通道 ==========
+  Native 层先启动 Binder 线程池 → 反射调用 ActivityThread.main()
+
+  ActivityThread.main() 三件事：
+    1. Looper.prepareMainLooper()  ← 主线程消息循环
+    2. new ActivityThread()        ← 同时 new ApplicationThread（字段初始化，不是 attach 时）
+    3. thread.attach(false)        ← 向 AMS 报到，建立双向 Binder 通道
+    4. Looper.loop()               ← 主线程进入死循环
+
+  ⚠️ ActivityThread / ApplicationThread 都不是线程，是 Java 对象
+  ⚠️ 代理永远在调用方，本体永远在被调用方
+
+  attach() 核心：把 ApplicationThread（Binder stub）传给 AMS
+    → AMS 持有 ApplicationThread 代理（可反向调 App）
+    → App 持有 ActivityManager 代理（可主动调 AMS）
+    → 双向 Binder 通道建立
+
+  AMS 反向调 bindApplication：
+    → Binder 线程池某线程被唤醒
+    → ApplicationThread.bindApplication：封装 AppBindData，sendMessage(H.BIND_APPLICATION)
+    → Binder 线程立刻释放
+    → 主线程 Looper 取出消息，mH Handler 处理
+  设计原因：Binder 线程池共 16 个，不能跑重活；生命周期必须串行在主线程
+
+  ========== 三、Application 初始化序列 ==========
+  主线程处理 BIND_APPLICATION 消息 → handleBindApplication：
+
+  1. 进程身份设置：改进程名、时区、Locale（把 Zygote 克隆的信息换成 App 自己的）
+  2. 创建 LoadedApk：持有 APK 路径 + PathClassLoader + Resources + Manifest 信息
+     ⚠️ 只是准备好 ClassLoader，类未被加载；类加载是按需的，首次引用时才发生
+  3. makeApplication：用 PathClassLoader 反射加载 Application 类 → 反射 new 实例（无参构造）
+     → application.attach(context) → attachBaseContext()  ← 第一个生命周期回调，此后有 Context
+     为什么必须反射：ActivityThread 是系统代码用系统 ClassLoader 加载，无法直接 new 你的 Application
+  4. installContentProviders：对 Manifest 里每个 Provider 反射 new + 同步调用 onCreate()，全在主线程
+  5. callApplicationOnCreate → Application.onCreate()
+
+  ⚠️ ContentProvider.onCreate 先于 Application.onCreate（反常识！）
+  系统原因：Provider 需要在应用未完全启动时也能被外部查询
+  实际代价：第三方 SDK 夹带 Provider（FirebaseInitProvider / WorkManagerInitializer 等），
+            悄悄在主线程串行消耗启动时间，审查命令：
+            adb shell dumpsys package com.xx.app | grep -i provider
+
+  ========== 四、Activity 启动 ==========
+  LAUNCH_ACTIVITY 消息路径与 BIND_APPLICATION 完全一样（Binder线程→封装→主线程mH处理）
+
+  performLaunchActivity 5 步：
+    1. 创建 Activity 的 Context（ContextImpl）
+    2. 反射 new Activity 实例（无参构造）
+    3. Activity.attach()：绑定 Context + new PhoneWindow（Window 在此诞生，DecorView 还没有）
+    4. setTheme（轻，可忽略）
+    5. 调用 Activity.onCreate()
+
+  setContentView 三阶段（在 onCreate 里执行）：
+    1. installDecor：new DecorView + 选系统布局模板 + 找到 mContentParent(FrameLayout)
+       层级：DecorView > 系统模板 > @android:id/content > 你的布局
+    2. LayoutInflater.inflate：解析 XML → 对每个标签反射 new View → addView 构建层级
+    3. 返回：View 树挂好，但没有任何 measure
+
+  ⚠️ setContentView 不跑 measure，setContentView 之后 view.width = 0
+  ⚠️ onCreate / onStart / onResume 在同一条 LAUNCH_ACTIVITY 消息里连续执行，
+     中间 Looper 不取新消息 → onCreate 里 post 的任务要等 onResume 之后才跑
+
+  ========== 五、渲染管线 ==========
+  onResume 返回后，系统调 WindowManager.addView(decorView)
+    → 创建 ViewRootImpl（View树与系统渲染的桥梁）
+    → requestLayout() 向 Choreographer 注册 vsync 回调
+
+  等下一个 vsync 信号（屏幕硬件每 16.6ms 发一次，Android 4.1 后应用端监听）
+    → Choreographer 触发 ViewRootImpl.performTraversals()
+
+  performTraversals 三步：
+    1. performMeasure：递归 onMeasure()，父传约束，子算宽高
+    2. performLayout：递归 onLayout()，确定每个 View 的四个坐标 ← view.width 到这里才不是 0
+    3. performDraw：递归 onDraw()，但用记录型 Canvas，输出 DisplayList（绘制指令列表）
+       ⚠️ 不是实际渲染像素，只是录制指令
+
+  DisplayList → RenderThread：
+    → 翻译成 OpenGL/Vulkan 命令 → GPU 渲染 → 写入 BufferQueue
+    → SurfaceFlinger 在下一个 vsync 合成所有图层 → 推上屏幕
+
+  ★ 首帧上屏 = TTID 终点
+    WMS 收到首帧提交通知 → logcat 打印：
+    "ActivityTaskManager: Displayed com.xx.app/.MainActivity: +XXXms"
+    → Starting Window 被系统移除
+
+  ⚠️ onResume ≠ 启动完成，onResume 只是"告诉系统可以绘制了"
+     真正结束是：SurfaceFlinger 合成上屏 → WMS 打 Displayed 日志
+
+  ========== 记忆锚点（2026-04-28）==========
+  ① attach 生 Window，setContentView 生 DecorView，addView 生 ViewRootImpl
+  ② 主线程录 DisplayList，RenderThread 翻译给 GPU，SurfaceFlinger 进程合成上屏
+  ③ onResume 不是终点，WMS 打 Displayed 才是

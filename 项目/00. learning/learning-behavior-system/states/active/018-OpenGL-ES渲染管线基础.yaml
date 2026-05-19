@@ -5,21 +5,21 @@ core: true
 level: 2
 review_stage: 0
 status: active
-last_study: 2026-03-26
-next_review: 2026-03-29
+last_study: 2026-03-31
+next_review: 2026-04-21
 importance: 5
 created: 2026-03-18
-stability_score: 70
-consecutive_success: 4
+stability_score: 75
+consecutive_success: 5
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-26
+  date: 2026-03-31
   result: good
   score: 4
   mode: qa
   weak_points:
-    - 坐标系原点位置没明确说出（屏幕左上角，纹理左下角）
-  suggested_interval_days: 3
+    - sp2 纹理坐标原点仍答左上角（应为左下角，连续两次同款错误）
+  suggested_interval_days: 21
 related_cards: [17, 19, 20]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_01.初步了解OpenGL ES.md
@@ -30,36 +30,8 @@ notes: |
     3. 三个坐标系：
        - Android屏幕坐标：左上角(0,0)，Y向下，像素单位
        - 世界坐标（顶点坐标）：中心(0,0)，Y向上，归一化[-1,1]
-       - 纹理坐标：左上角(0,0)，范围[0,1]×[0,1]
+       - 纹理坐标：左下角(0,0)，范围[0,1]×[0,1]，Y向上（与NDC方向一致）
     4. GPU渲染流程6步：
        顶点处理→图元装配→光栅化（插值计算纹理坐标）→片元处理→测试与混合→写入帧缓冲
     5. 纹理本质：图像数据在GPU显存的存储形式，采样=按纹理坐标取色
     6. 光栅化插值：4个顶点建立对应关系，自动为三角形内百万像素插值出纹理坐标
-
-sub_points:
-  - id: sp1
-    desc: "GPU vs CPU并行优势：1080p=207万像素，GPU 3000~10000+核心并行处理"
-    status: good
-    last_reviewed: 2026-03-26
-  - id: sp2
-    desc: "三个坐标系：Android屏幕坐标（左上角原点）、世界坐标（中心原点归一化）、纹理坐标（左下角原点）"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp3
-    desc: "GPU渲染流程6步：顶点处理→图元装配→光栅化→片元处理→测试与混合→写入帧缓冲"
-    status: good
-    last_reviewed: 2026-03-26
-  - id: sp4
-    desc: "纹理本质：图像数据在GPU显存的存储形式，采样=按纹理坐标取色"
-    status: good
-    last_reviewed: 2026-03-26
-  - id: sp5
-    desc: "光栅化插值：4个顶点建立对应关系，自动为三角形内所有像素插值出纹理坐标"
-    status: good
-    last_reviewed: 2026-03-26
-
-review_sessions:
-  - date: 2026-03-26
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
-    result: good
-    score: 4

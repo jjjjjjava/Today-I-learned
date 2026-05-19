@@ -1,0 +1,107 @@
+id: 032
+title: 四类ANR差异对比与InputDispatcher机制
+category: android
+core: true
+level: 1
+review_stage: 2
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-16
+importance: 5
+created: 2026-04-14
+stability_score: 75
+consecutive_success: 3
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 7
+weak_points:
+  - 四类ANR超时数值（Service 20s/200s，Broadcast 5s/60s，ContentProvider 10s）
+  - Input ANR 5s计时起点：事件放入waitQueue的时刻，不是进入InboundQueue的时刻
+  - dispatchOnce轮询本质：ANR检测内联在死循环里，适合持续高频输入流；炸弹机制适合离散生命周期事件
+related_cards: [030, 031, 033]
+notes: |
+  学习来源：04. 学习_性能优化/ANR_01.基础概念.md + findings.md Input ANR专项
+
+  ① 四类ANR总览表
+    | 类型           | 前台超时 | 后台超时 | 埋雷方法                        | 爆雷处理              |
+    | Service        | 20s      | 200s     | scheduleServiceTimeoutLocked    | appNotResponding      |
+    | Broadcast      | 5s       | 60s      | setBroadcastTimeoutLocked       | appNotResponding      |
+    | ContentProvider| 10s      | —        | attachApplicationLocked         | removeProcessLocked   |
+    | Input          | 5s       | —        | 无炸弹（dispatchOnce主动检测）  | appNotResponding      |
+
+  ② Broadcast ANR
+    埋雷：BroadcastQueue.processNextBroadcast() → setBroadcastTimeoutLocked()
+    拆雷：onReceive执行完 → cancelBroadcastTimeoutLocked()
+    爆雷：BroadcastHandler → broadcastTimeoutLocked() → AppNotResponding.run()
+          → AMS.appNotResponding()（最终汇聚点相同）
+    前台超时值：官方最新文档5s（历史旧版Gityuan为10s）
+    面试答：5s，补"历史版本10s"展示深度
+
+  ③ ContentProvider ANR（异类）
+    埋雷时机：进程attach时（AMS.attachApplicationLocked），不是查询时
+    拆雷：App完成Provider初始化 → AMS.publishContentProviders()
+    爆雷：processContentProviderPublishTimedOutLocked() → removeProcessLocked()
+          直接杀进程，不弹框，不走appNotResponding
+    原因：Provider初始化失败说明进程无法正常启动，没有等待意义
+
+  ④ Input ANR——独立王国
+    [为什么需要IMS和独立线程]
+    Input事件高频且时间极敏感，共用AMS Handler会因其他任务（Service/Broadcast/
+    Provider）延迟导致响应不及时。因此引入IMS（InputManagerService），在
+    system_server内独立运行InputReader线程 + InputDispatcher线程，与AMS并行。
+
+    [为什么用Socket而非Binder]
+    Binder线程池有上限（默认16个），高频Input事件走Binder会打满线程池，
+    导致App丢失与系统的Binder通信能力。Socket是异步双向通道，延迟低，
+    适合高频实时通信。InputChannel在App创建Window时（WMS.addWindow）
+    建立Socket pair，一端给InputDispatcher，一端给App主线程epoll监听。
+
+    [Input ANR完整流程]
+    用户触摸 → 内核事件 → InputReader → mInboundQueue
+        → InputDispatcher取出 → 找焦点窗口的Connection
+        → 入Connection.outboundQueue
+        → 通过InputChannel socket发给App主线程
+        → 移入Connection.waitQueue（已发待confirm）
+        → App侧：主线程Looper本来就用epoll_wait阻塞，
+          ViewRootImpl创建WindowInputEventReceiver时把socket fd注册进同一epoll
+          IMS socket写入 → epoll唤醒主线程 → native直接回调
+          InputEventReceiver.dispatchInputEvent()（不入MessageQueue）
+          → ViewRootImpl InputStage链 → View.dispatchTouchEvent
+          → 消费完 finishInputEvent() → socket写回ACK
+        → InputDispatcher从waitQueue移除事件 ✓
+
+    [ANR检测——无炸弹，dispatchOnce主动轮询]
+    每轮dispatchOnce()检查焦点窗口Connection的waitQueue头部：
+        elapsed = now - waitQueue.front().eventTime
+        elapsed ≥ 5s → onANRLocked()
+    计时起点是事件产生时刻（eventTime），不是App收到时刻。
+    App排队等待的时间也计入5s内。
+
+    [mCommandQueue缓冲——避免死锁] 并不是特别重要，可以忽略
+    onANRLocked()持有InputDispatcher锁时不能直接调AMS（死锁风险）
+    → 把"通知ANR"封装为命令入mCommandQueue
+    → 本轮dispatchOnce()结束，释放锁
+    → 下一轮dispatchOnce()执行：runCommandsLockedInterruptible()
+    → 释放锁后 → doNotifyANRLockedInterruptible()
+
+    [跨层调用链——全程InputDispatcher线程，无线程切换]  并不是特别重要，可以忽略
+    doNotifyANRLockedInterruptible()         ← InputDispatcher线程（C++）
+        → NativeInputManager::notifyANR()   ← 同线程
+        → JNI过桥
+        → InputManagerService.notifyANR()   ← 同线程（Java，system_server内）
+        → InputMonitor.notifyANR()
+        → AMS.inputDispatchingTimedOut()    ← 同线程，进程内直接调用非Binder
+             → 快速处理，返回建议等待时长
+             → mUiHandler.post(弹框)        ← 这里才切线程到UiThread（异步）
+
+    [同进程内跨线程通信本质]
+    同一进程共享内存空间，方法调用直接执行在调用方线程上。
+    "在哪个线程执行"取决于谁发起调用，不取决于对象归属。
+    显式线程切换必须通过Handler.post/Looper，不会自动切换。
+
+    [汇聚点总结]
+    Service / Broadcast / Input → AMS.appNotResponding() → 弹框or杀
+    ContentProvider             → removeProcessLocked()  → 直接杀（不弹框）

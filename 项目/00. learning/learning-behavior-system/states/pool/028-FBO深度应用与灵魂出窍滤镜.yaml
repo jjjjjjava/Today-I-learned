@@ -1,0 +1,32 @@
+id: 028
+title: FBO深度应用与灵魂出窍滤镜
+category: android
+core: true
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 5
+created: 2026-03-30
+stability_score: 0
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: null
+  score: null
+  mode: null
+  weak_points: []
+  suggested_interval_days: null
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_05.OpenGL FBO数据缓冲区.md
+  代码来源：00. learning/learning-behavior-system/code/FBO.md
+  前置：021双Surface架构 + 025多画面渲染 + 027深入理解EGL
+
+  核心内容概要：
+    A. FBO本质：离屏渲染，把颜色attachment挂GL_TEXTURE_2D，GPU内部切换指针（ns级），不经CPU
+    B. FBO 5步API：createFBOTexture / createFrameBuffer / bindFBO / unbindFBO / deleteFBO
+    C. 灵魂出窍双通道：每500ms快照写FBO纹理；每帧双纹理混合输出屏幕
+    D. configFboViewport三要素：单位矩阵 + mReserveVertexCoors翻转 + viewport=视频尺寸
+    E. 着色器双纹理混合：scale扩散 + alpha消散 + drawFbo flag控制渲染目标

@@ -1,0 +1,18 @@
+﻿project_id: 003
+title: 图片编辑项目
+project_path: D:\Develop\Today-I-learned\项目\00. learning\learning-behavior-system\code\图片编辑.diff
+current_round: 0
+tech_stack:
+  - OpenGL ES 2.0
+  - GLSurfaceView
+  - Custom Shader (GLSL)
+  - FBO (FrameBuffer Object)
+  - Java (Android)
+  - 工具切换协调器 (ToolSwitchCoordinator)
+architecture_analyzed: true
+rounds_completed: []
+interview_questions:
+  basic: 0
+  deep: 0
+  extend: 0
+last_updated: 2026-03-04

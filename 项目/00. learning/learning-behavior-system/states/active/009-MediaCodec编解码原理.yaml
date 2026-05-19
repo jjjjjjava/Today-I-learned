@@ -1,48 +1,300 @@
-﻿id: 009
+id: 009
 title: MediaCodec编解码原理
 category: android
 core: true
 level: 3
 review_stage: 2
 status: active
-last_study: 2026-03-25
-next_review: 2026-04-04
+last_study: 2026-04-10
+next_review: 2026-04-14
 importance: 4
 created: 2026-03-02
-stability_score: 90
-consecutive_success: 6
+stability_score: 78
+consecutive_success: 1
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-25
-  result: good
-  score: 4
-  mode: qa
+  date: 2026-04-10
+  result: ok
+  score: 3
+  mode: recall
   weak_points:
-    - MediaExtractor和MediaMuxer说混（Extractor解封装读取，Muxer封装写入）
-  suggested_interval_days: 10
-notes: 硬编硬解、异步同步模式、常见问题（绿屏花屏）
-related_cards: [10, 11, 14]
+    - 状态机生命周期：分组(Stopped/Executing)已掌握，但stop()→Uninitialized转换细节仍需巩固
+    - 同步vs异步模式：核心区别清晰，四个回调名记住2/4(onInputBufferAvailable/onOutputBufferAvailable对，另两个需巩固)
+    - CSD数据：概念方向对(解码配置信息)，但内容不准确(误说分辨率/码率，实际是SPS/PPS)，需记住SPS=csd-0、PPS=csd-1
+  suggested_interval_days: 4
+notes: |
+  ## 2026-04-09 升Level评估（14轮，未通过）
+  good(4): Q4 Surface vs ByteBuffer / Q9 flush vs stop / Q12 转码流程 / Q13 解码→GL→编码
+  ok(5): Q3 生产者消费者 / Q8 零拷贝 / Q10 releaseOutputBuffer / Q11 多实例 / Q14 音画同步
+  weak(4): Q1 状态机 / Q2 同步异步 / Q5 CSD / Q6 绿屏
+  跨卡片串联强(Q12/Q13 good)，MediaCodec自身细节不够扎实
 
-sub_points:
-  - id: sp1
-    desc: "MediaCodec 硬编硬解流程（configure → start → dequeueInput → queueInput → dequeueOutput）"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp2
-    desc: "同步模式 vs 异步模式（Callback）的使用场景与区别"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp3
-    desc: "常见问题排查（绿屏、花屏的原因与解决）"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp4
-    desc: "MediaExtractor 解封装 vs MediaMuxer 封装（读取 vs 写入，不要混淆）"
-    status: weak
-    last_reviewed: 2026-03-25
+  ## 面试要点详细版
 
-review_sessions:
-  - date: 2026-03-25
-    covered_sub_points: [sp1, sp2, sp3, sp4]
-    result: good
-    score: 4
+  ### Q1 状态机完整生命周期
+
+  两大组 + 两个终态：
+  - Stopped组：Uninitialized, Configured, Error（codec没在处理数据，buffer队列空）
+  - Executing组：Flushed, Running, End-of-Stream（codec正在处理数据，buffer队列在流转）
+  - 终态：Released
+
+  状态机图：
+  ```
+                createByType/createByName
+                        │
+                        ▼
+               ┌─────────────────┐
+               │  Uninitialized  │◄──── stop() / reset()
+               └────────┬────────┘
+                        │ configure()
+                        ▼
+               ┌─────────────────┐
+               │   Configured    │
+               └────────┬────────┘
+                        │ start()
+                        ▼
+          ┌─────────────────────────────┐
+          │      Executing（执行组）      │
+          │                             │
+          │  ┌─────────┐  首次queue     │
+          │  │ Flushed  │───────────┐   │
+          │  └────▲─────┘           │   │
+          │       │ flush()         ▼   │
+          │       │          ┌─────────┐│
+          │       ├──────────│ Running ││
+          │       │          └────┬────┘│
+          │       │               │     │
+          │       │    queue(EOS flag)  │
+          │       │               ▼     │
+          │       │     ┌──────────────┐│
+          │       └─────│End-of-Stream ││
+          │             └──────────────┘│
+          └─────────────────────────────┘
+                        │                    任何状态
+                     stop()                     │
+                        │                    发生错误
+                        ▼                       ▼
+               ┌─────────────────┐     ┌─────────────┐
+               │  Uninitialized  │     │    Error     │
+               └────────┬────────┘     └──────┬──────┘
+                        │                     │ reset()→Uninitialized
+                     release()                │ release()→Released
+                        ▼                     ▼
+               ┌─────────────────┐   ┌─────────────┐
+               │    Released     │   │   Released   │
+               └─────────────────┘   └─────────────┘
+  ```
+
+  逐状态说明：
+  1. Uninitialized — 刚出生，什么都没配。进入：create/stop()/reset()。出去：configure()→Configured
+  2. Configured — 知道干什么了但没开工。configure传：MediaFormat(mime/分辨率/码率/帧率)+可选Surface+flags。出去：start()→Flushed
+  3. Flushed — 执行组入口，buffer队列刚清空。start()后不是直接Running而是Flushed，因为还没有buffer被client持有。出去：首次dequeue+queue→Running
+  4. Running — 正常干活。两个出口：flush()→Flushed；queue(EOS flag)→End-of-Stream
+  5. End-of-Stream — 输入结束等output排完。不能再提交input，只能继续dequeue output直到收到EOS output。出口：flush()回Flushed或stop()回Uninitialized
+  6. Error — 任何状态都可能跳入。reset()→Uninitialized(尝试恢复)；release()→Released(放弃)
+  7. Released — 终态不可逆，codec实例彻底销毁
+
+  实际场景：
+  - 播放器seek：Running→flush()→Flushed→Extractor.seekTo→重新dequeue+queue→Running
+  - 播放结束：Running→queue(EOS)→End-of-Stream→收到output EOS→stop()→Uninitialized→release()→Released
+  - 出错恢复：Running→Error→reset()→Uninitialized→configure()→Configured→start()→Flushed
+
+  ### Q2 同步模式 vs 异步模式
+
+  面试回答：
+  MediaCodec有两种工作模式：同步和异步。
+
+  同步模式，客户端在循环中主动调用dequeueInputBuffer获取空buffer、填充数据后queueInputBuffer提交，再调dequeueOutputBuffer阻塞等待结果、消费后releaseOutputBuffer归还。整个过程是轮询驱动，dequeueOutputBuffer传入timeout，没数据就阻塞等待，线程空转。
+
+  异步模式，API 21引入，在configure之前调setCallback注册四个回调：onInputBufferAvailable、onOutputBufferAvailable、onOutputFormatChanged、onError。start之后客户端不需要手动dequeue，codec有buffer可用时主动通过回调通知，回调在指定Handler线程执行（或codec内部Looper线程，不是主线程）。
+
+  核心区别是阻塞轮询 vs 事件驱动。同步模式每个codec实例需要一个专门的轮询线程，多路场景线程开销大；异步模式天然适合流水线并行——input填充和output消费在各自回调中独立推进，不需要额外轮询线程，也没有阻塞空转。
+
+  场景上，简单的单路播放/录制用同步模式代码更直观；多路编解码、低延迟直播、或需要精细调度的场景用异步模式，减少线程竞争和上下文切换开销。
+
+  Handler线程细节：
+  ```java
+  // 版本1：回调在codec内部Looper线程执行
+  codec.setCallback(callback);
+  // 版本2：回调在你指定的Handler线程执行
+  HandlerThread thread = new HandlerThread("codec-callback");
+  thread.start();
+  codec.setCallback(callback, new Handler(thread.getLooper()));
+  ```
+
+  ### Q3 生产者-消费者模型
+
+  MediaCodec内部两组buffer队列的循环流转：
+  ```
+          Input Buffer队列                    Output Buffer队列
+
+  Client ──dequeue──► 空buffer              Codec ──填充──► 满buffer
+          填数据                                              │
+  Client ──queue────► Codec                  Client ◄─dequeue─┘
+                       │                      消费/渲染
+                     处理(编/解码)             Client ──release──► 归还Codec
+  ```
+  Input端：Client(生产者)填原始数据 → Codec(消费者)取走编解码
+  Output端：Codec(生产者)填结果 → Client(消费者)取走渲染/写文件
+  buffer总数有限(4~8个)，不release就不会回到Codec可用池，最终pipeline卡死
+
+  ### Q4 Surface模式 vs ByteBuffer模式
+
+  Surface模式：MediaCodec不将处理后的数据放入自身OutputBuffer，而是通过Surface(BufferQueue生产者接口)直接将数据填入共享GraphicBuffer。GPU可借助OES外部纹理零拷贝使用该数据。适合上屏渲染、GPU后处理。90%场景用Surface。
+
+  ByteBuffer模式：MediaCodec把结果放入OutputBuffer，需手动dequeue获取原始YUV像素数据。适合CPU端处理（无EGL环境的缩略图生成、老CV库输入、单帧截图）。能走GPU就走GPU，ByteBuffer是退路不是首选。
+
+  ### Q5 CSD（Codec Specific Data）
+
+  CSD是解码器开工前必须知道的"说明书"——告诉它编码参数，否则不知道怎么解。
+
+  三种格式的CSD内容：
+  - H.264: csd-0 = SPS（Sequence Parameter Set，序列级参数：分辨率/profile/level/参考帧数）, csd-1 = PPS（Picture Parameter Set，图像级参数：量化参数/熵编码模式）
+  - H.265: csd-0 = VPS+SPS+PPS 三合一（多一个VPS视频级参数，支持多层编码）
+  - AAC: csd-0 = AudioSpecificConfig（2字节，采样率索引+声道数+编码profile）
+
+  两种传递方式：
+  1. 通过MediaFormat（最常用）：MediaExtractor解封装时自动从容器提取CSD放进MediaFormat，configure时带入
+  2. 通过带BUFFER_FLAG_CODEC_CONFIG标志的buffer（手动喂）：用于没有Extractor的场景（RTP/RTSP网络流，SPS/PPS在SDP或流内携带）
+
+  没有CSD → 绿屏/黑屏/崩溃。CSD错了 → 花屏。
+
+  ### Q6 绿屏排查
+
+  绿屏的本质是YUV数据全零——Y=0,U=0,V=0在YUV色彩空间映射到RGB就是绿色。
+
+  常见原因有五个，按排查优先级：
+  第一，CSD数据缺失或错误，SPS/PPS没有正确传递给解码器，它无法解码第一个关键帧，表现是从第一帧就全绿；
+  第二，关键帧丢失，比如seek后没有从I帧开始喂数据，解码器缺少参考帧，表现是seek后绿几秒然后恢复；
+  第三，Color Format不匹配，codec输出的YUV排列和消费端预期不一致（NV12 vs NV21，UV交错顺序反了），或者stride对齐导致平面偏移，表现是画面有内容但颜色乱或有绿边；
+  第四，输入buffer数据不完整，offset/size参数错误导致codec收到截断数据；
+  第五，硬件解码器bug，特定设备特定分辨率下才出现，换软解可验证。
+
+  排查三步走：
+  1. 打印MediaFormat确认CSD(csd-0/csd-1)存在且非空
+  2. 确认第一个喂入的buffer带BUFFER_FLAG_KEY_FRAME，seek后是否flush()+从I帧重新喂
+  3. 检查queueInputBuffer的size不为0，换软解对比排除硬件bug
+
+  Color Format补充——YUV420的三种内存排列：
+  - NV12（多数硬解输出）：YYYY...UVUVUV（UV交错）
+  - NV21（Android Camera旧API）：YYYY...VUVUVU（VU交错，顺序反了）
+  - I420/YV12（软解常用）：YYYY...UUUU...VVVV（UV分开排）
+
+  ### Q8 零拷贝
+
+  解码端零拷贝链路：
+  Codec → Surface(BufferQueue) → GraphicBuffer → OES外部纹理 → GPU采样
+  全程数据在GPU内存流转，CPU不碰像素。
+
+  编码端零拷贝链路（方向相反）：
+  ```java
+  encoder.configure(format, null, null, CONFIGURE_FLAG_ENCODE);
+  encoder.start();
+  Surface inputSurface = encoder.createInputSurface();
+  // 用inputSurface创建EGLSurface
+  EGLSurface eglSurface = eglCreateWindowSurface(display, config, inputSurface, null);
+  // OpenGL渲染到这个EGLSurface
+  eglMakeCurrent(display, eglSurface, eglSurface, context);
+  // draw calls...
+  eglSwapBuffers(display, eglSurface);
+  // → 帧数据直接进入编码器，零拷贝
+  ```
+  GPU渲染 → encoder的inputSurface(BufferQueue) → Codec编码
+
+  完整零拷贝链路（解码→处理→重编码）：
+  MediaCodec(解码) → BufferQueue → OES纹理 → GPU着色器处理 → 渲染到encoder的inputSurface → BufferQueue → MediaCodec(编码)
+  全程CPU只负责控制流程，不碰像素数据。
+
+  ### Q9 flush() vs stop()+configure()+start()
+
+  flush()：清空buffer队列但保留configure参数不变。适合seek——清完队列从新位置继续喂，不需要重新配置。异步模式flush后必须重新调start()才能触发回调。
+
+  stop()+configure()+start()：完全重建。适合格式变更（分辨率变了、换了一路流）。Error状态下要先reset()回到Uninitialized再configure，直接stop()不行。
+
+  ### Q10 releaseOutputBuffer
+
+  不调用 → output buffer耗尽 → codec内部处理完的帧没地方放 → 整个pipeline阻塞 → input端也dequeue不到 → 死锁式卡住（不是丢帧！）
+
+  三种调用方式：
+  ```java
+  // 渲染到configure时传入的Surface
+  codec.releaseOutputBuffer(index, true);
+  // 丢弃不显示（seek后跳过目标时间之前的帧）
+  codec.releaseOutputBuffer(index, false);
+  // API 21+：传入纳秒级时间戳，Surface按时渲染（配合VSync精确控制）
+  codec.releaseOutputBuffer(index, System.nanoTime() + delayNs);
+  ```
+
+  render=false场景：seek后解码出来的帧PTS在目标时间之前，需要解码（后续帧依赖做参考）但不需要显示。
+
+  ### Q12 完整转码流程
+
+  ```
+  MediaExtractor                    MediaMuxer
+    readSampleData()                  writeSampleData()
+         │                                 ▲
+         ▼                                 │
+    Decoder(MediaCodec)           Encoder(MediaCodec)
+    input ← H264编码帧             output → H264编码帧
+    output → YUV原始帧             input ← YUV原始帧
+         │                                 ▲
+         └──── Surface零拷贝直连 ───────────┘
+               (或ByteBuffer手动搬)
+  ```
+  - decoder的output直连encoder的input：零拷贝方案是decoder configure时传入encoder的inputSurface，中间加OpenGL做滤镜
+  - 音视频track分别处理：各走一套decoder→encoder，最后writeSampleData到同一个Muxer
+
+  ### Q13 解码→OpenGL后处理→编码链路
+
+  Decoder → Surface → GraphicBuffer → OES外部纹理 → GPU着色器处理(滤镜/水印) → FBO(先bind+创建2D纹理+配置color attachment) → 作为纹理进一步处理 → 渲染到encoder.createInputSurface()的Surface → encoder编码 → Muxer封装
+
+  关键细节：渲染到encoder的EGLSurface之前必须设置PTS：
+  ```java
+  EGLExt.eglPresentationTimeANDROID(display, encoderEglSurface, frameTimestampNs);
+  eglSwapBuffers(display, encoderEglSurface);
+  ```
+  不设置PTS → encoder输出帧没有正确时间戳 → 播放速度异常
+
+  ### Q14 音画同步
+
+  核心原理：音频和视频是两条独立解码流，各自有PTS（展示时间戳，微秒）。以音频为基准，调整视频展示节奏。
+
+  为什么音频做主时钟：音频对时间极敏感——快了慢了人耳立刻感知。视频丢一帧或重复一帧人眼几乎察觉不到。所以：音频匀速播放，视频去追音频。
+
+  视频帧三种处理：
+  ```
+  音频主时钟当前时间: audioPTS = 1000ms
+  视频帧到来，检查videoPTS:
+
+  1. videoPTS ≈ audioPTS（差值在±30ms内）
+     → 正常渲染 releaseOutputBuffer(index, true)
+
+  2. videoPTS < audioPTS（视频帧来晚了/过时了）
+     → 丢弃 releaseOutputBuffer(index, false)
+     → 继续取下一帧追上音频
+
+  3. videoPTS > audioPTS（视频帧来早了）
+     → 等待 releaseOutputBuffer(index, timestampNs)
+     → Surface配合VSync定时渲染
+  ```
+
+  PTS来源：
+  - 播放场景：MediaExtractor.getSampleTime()→微秒级PTS→queueInputBuffer的presentationTimeUs传递→decoder输出BufferInfo.presentationTimeUs保持一致
+  - 录制/转码场景：自己生成PTS，通常用System.nanoTime()/1000或从源Extractor的sampleTime直接透传
+
+  ## 讨论中新收获
+  - encoder.createInputSurface()：编码端零拷贝的关键API，GPU渲染到这个Surface直接进编码器
+  - releaseOutputBuffer第三种用法：传时间戳精确控制渲染时机，比sleep精确
+  - render=false场景：seek后跳过旧帧（需要解码做参考但不显示）
+  - CSD手动喂入场景：RTP/RTSP网络流没有Extractor，SPS/PPS要自己解析后用BUFFER_FLAG_CODEC_CONFIG喂
+
+  ## 2026-04-10 弱点复习（4题）
+  ok(3): 状态机(分组对,stop转换细节差) / 同步异步(核心区别对,回调名2/4) / CSD(方向对,内容不准)
+  good(1): 绿屏(3/5原因+排查思路,串联NAL知识;但本质说错RGB全零→应为YUV全零=绿)
+
+  ## 下次复习重点考察
+  - 状态机：stop()→Uninitialized（不是Configured）
+  - 同步vs异步：onOutputFormatChanged + onError 这两个回调名
+  - CSD：SPS=csd-0, PPS=csd-1（不是分辨率/码率）
+  - 绿屏本质：YUV全零=绿色（不是RGB全零）
+related_cards: [10, 11, 14, 17, 27]

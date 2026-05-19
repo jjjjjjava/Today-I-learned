@@ -1,0 +1,53 @@
+id: 029
+title: OpenGL渲染执行流程-重点弱点记录
+category: android
+core: true
+level: 2
+review_stage: 1
+status: active
+last_study: 2026-04-02
+next_review: 2026-04-09
+importance: 5
+created: 2026-03-31
+stability_score: 55
+consecutive_success: 1
+consecutive_failures: 0
+last_assessment:
+  date: 2026-04-02
+  result: good
+  score: 4
+  mode: level_up
+  weak_points:
+    - VSync到SurfaceFlinger的完整路径（HWComposer → EventThread → socket，不是直接中断向量表）
+  suggested_interval_days: 7
+related_cards: [024, 027]
+notes: |
+  核心理解（2026-04-02 复习澄清）：
+
+  BufferQueue 两套 API（Producer端 vs Consumer端）：
+    Producer端（App/GL线程）：dequeueBuffer拿空buffer / queueBuffer提交填好的
+    Consumer端（SurfaceFlinger）：acquireBuffer拿填好的 / releaseBuffer归还用完的
+    底层是共享内存（匿名mmap），两个进程映射同一块物理内存，无数据拷贝
+
+  Buffer 状态机：
+    FREE → dequeue → DEQUEUED（GL线程在画）→ queue → QUEUED（等SF取）
+    → acquire → ACQUIRED（SF在合成）→ release → FREE
+
+  eglSwapBuffers 标准流程：
+    ① doDraw()：GPU执行绘制命令，结果写入当前GraphicBuffer（不是CPU搬数据）
+    ② queueBuffer（FREE→QUEUED，Binder通知SurfaceFlinger"有新帧"）
+    ③ dequeueBuffer尝试拿下一块buffer
+       有FREE → 拿到，返回；无FREE → futex_wait阻塞
+
+  SurfaceFlinger 侧：
+    ④ VSync到来 → acquireBuffer（QUEUED→ACQUIRED）← 不是收到通知就acquire
+    ⑤ 合成所有图层 → 送硬件显示
+    ⑥ releaseBuffer（ACQUIRED→FREE）→ 信号量+1 → futex_wake唤醒GL线程
+
+  通信机制汇总（2026-04-02 AOSP源码确认）：
+    queueBuffer通知SF：Binder（跨进程）
+    SF唤醒GL线程：Binder回调IProducerListener::onBufferReleased（跨进程）
+      → App进程内 mDequeueCondition.broadcast()（Condition Variable/futex，进程内唤醒）
+      → GL线程 waitForFreeSlotThenRelock 返回 → dequeueBuffer成功
+    VSync通知App UI：socket+epoll
+    关键：跨进程靠Binder，进程内靠Condition Variable(futex)，两段接力

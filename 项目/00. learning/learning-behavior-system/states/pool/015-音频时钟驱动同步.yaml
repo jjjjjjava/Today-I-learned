@@ -1,0 +1,22 @@
+id: 015
+title: 音频时钟驱动同步
+category: android
+core: false
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 3
+created: 2026-03-16
+stability_score: 50
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: weak
+  score: 2
+  mode: skip_check
+  weak_points: []
+  suggested_interval_days: null
+notes: 以AudioTrack.playbackHeadPosition为基准驱动视频渲染，比系统时间精度更高，ExoPlayer默认策略

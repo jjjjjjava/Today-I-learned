@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "WebSearch",
+      "WebFetch(domain:www.nature.com)",
+      "WebFetch(domain:controlaltbackspace.org)",
+      "WebFetch(domain:www.justinmath.com)",
+      "WebFetch(domain:climbtheladder.com)",
+      "WebFetch(domain:zhuanlan.zhihu.com)",
+      "WebFetch(domain:www.songho.ca)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/nicknisi/mesa/master/src/egl/main/eglapi.c\")",
+      "WebFetch(domain:source.android.com)",
+      "WebFetch(domain:registry.khronos.org)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:android.googlesource.com)",
+      "Bash(powershell -c \"Get-Content 'D:\\\\Develop\\\\Today-I-learned\\\\项目\\\\00. learning\\\\learning-behavior-system\\\\states\\\\active\\\\028-FBO深度应用与灵魂出窍滤镜.yaml' -Encoding UTF8\")",
+      "Bash(powershell -c \"Get-ChildItem 'D:\\\\Develop\\\\Today-I-learned\\\\项目\\\\00. learning\\\\learning-behavior-system\\\\states\\\\active\\\\' -Filter '028*' | Select-Object FullName\")",
+      "Bash(powershell -Command \"[Console]::OutputEncoding = [Text.Encoding]::UTF8; Get-ChildItem -Path 'D:\\\\Develop\\\\Today-I-learned\\\\项目\\\\00. learning\\\\learning-behavior-system\\\\states\\\\active\\\\' -Filter '028*' | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell -Command \"[Console]::OutputEncoding = [Text.Encoding]::UTF8; Get-Content -Path 'D:\\\\Develop\\\\Today-I-learned\\\\项目\\\\00. learning\\\\learning-behavior-system\\\\states\\\\active\\\\028-FBO深度应用与灵魂出窍滤镜.yaml' -Raw -Encoding UTF8\")",
+      "Bash(curl -s \"https://www.google.com/search?q=Android+OpenGL+FBO+%E9%9D%A2%E8%AF%95%E9%A2%98&num=10\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s \"https://www.google.com/search?q=%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91+FBO+%E9%9D%A2%E8%AF%95&num=10\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s \"https://www.google.com/search?q=OpenGL+%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93+%E9%9D%A2%E8%AF%95%E9%A2%98&num=10\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s \"https://www.google.com/search?q=OpenGL+FBO+interview+questions+Android&num=10\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s \"https://www.google.com/search?q=framebuffer+object+interview+questions+opengl&num=10\" -H \"User-Agent: Mozilla/5.0\")",
+      "WebFetch(domain:juejin.cn)",
+      "WebFetch(domain:www.zhihu.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:blog.csdn.net)",
+      "Bash(curl -sL \"https://api.github.com/repos/JeffMony/AVInterview/contents\")",
+      "WebFetch(domain:www.jianshu.com)",
+      "WebFetch(domain:gityuan.com)"
+    ]
+  }
+}

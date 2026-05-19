@@ -2,26 +2,27 @@ id: 027
 title: 深入理解EGL（手动管理OpenGL渲染环境）
 category: android
 core: true
-level: 1
+level: 3
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-29
+last_study: 2026-04-09
+next_review: 2026-04-12
 importance: 5
 created: 2026-03-26
-stability_score: 30
-consecutive_success: 1
+stability_score: 60
+consecutive_success: 3
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
-  result: good
+  date: 2026-04-09
+  result: level_up
   score: 4
-  mode: study
+  mode: quiz
   weak_points:
-    - createOffscreenSurface vs createWindowSurface未覆盖（离屏渲染用途）
-    - sleep(20)限速问题：教学代码简化，生产级应去掉，依赖eglSwapBuffers天然VSync限速
-  suggested_interval_days: 2
-related_cards: [17, 21, 24]
+    - eglMakeCurrent第二件事（默认FBO绑定GraphicBuffer）反复遗漏
+    - RenderThread 6个状态记不住
+    - BufferQueue状态归属混淆（QUEUED/ACQUIRED/DEQUEUED谁持有）
+  suggested_interval_days: 3
+related_cards: [9, 17, 21, 24, 28]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_04.EGL.md
   代码来源：00. learning/learning-behavior-system/code/logcad.md
@@ -138,48 +139,14 @@ notes: |
         - mNeverCreateEglContext：防纹理ID重复生成，整个线程生命周期只触发一次
         - sleep(20)是教学简化，生产级应删除，依赖eglSwapBuffers天然VSync限速
 
+  升Level评估记录（2026-04-09）：
+    15轮全量提问，覆盖基础/中级/高级
+    基础(Q1-Q5)：全good，EGL定位/四大对象/makeCurrent/WindowSurface vs Pbuffer/三种View
+    中级(Q6-Q10)：Q8/Q9/Q10 good，Q6/Q7 ok（SwapBuffers链路对但SF时序反了；缓冲状态归属混）
+    高级(Q11-Q15)：Q12 good，Q15 excellent（完整链路贯通），Q11 weak（状态机记不住），Q13/Q14 ok
+    亮点：讨论中GET到共享Context多线程滤镜场景；Q13 HWC/GPU fallback立刻用在Q15贯通题
+
   下次复习重点考察：
-    - EGLConfig具体配置哪些参数，代码怎么写
-    - createOffscreenSurface用途和createWindowSurface的区别
-    - 完整初始化序列：从Activity.onCreate到第一帧渲染的全流程
-    - VSync完整通信路径复述
-
-sub_points:
-  - id: sp1
-    desc: "EGL两大职责：桥接OpenGL与窗口系统（EGLDisplay/EGLConfig/EGLSurface）+ 管理Context（EGLContext）；OpenGL跨平台不认识Android Surface"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "FBO结构（指针集合）：FBO自身不存数据，持有attachment插槽；默认FBO(0)→EGL创建color attachment指向GraphicBuffer；自定义FBO→手动挂纹理"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "eglMakeCurrent机制：存入线程TLS（Display/Context/draw Surface/read Surface）+ 把默认FBO(0)的color attachment绑定到EGLSurface内GraphicBuffer"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "EGLContext=线程隔离工具箱：状态层（着色器/混合模式/FBO绑定）+ 资源池（纹理/Shader/VBO ID）+ 绑定信息；共享Context=资源池共享但状态独立"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "五层代码架构：EGLPlayerActivity(业务配置) → CustomerGLRenderer(主线程传话筒) → RenderThread(GL线程状态机) → EGLSurfaceHolder(简化层) → EGLCore(EGL14原始封装)"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp6
-    desc: "VSync完整通信机制：路线A(socket+epoll→App Looper→Choreographer→UI绘制) vs 路线B(合成→releaseBuffer→信号量+1→futex_wake→唤醒GL线程dequeueBuffer)"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp7
-    desc: "SurfaceView本质（打洞+独立Surface直连SurfaceFlinger）vs TextureView（GPU渲染结果作纹理贴回View树，支持动画变换，性能略低）"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp8
-    desc: "eglCreateWindowSurface本质：封装Android原生Surface向OpenGL提供平台无关EGLSurface + 建立BufferQueue连接 + dequeue第一块GraphicBuffer备用"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp4, sp5, sp6, sp7, sp8]
-    result: good
-    score: 4
+    - eglMakeCurrent两件事（TLS + 默认FBO绑定GraphicBuffer）
+    - RenderThread 6个状态及转换（跟Surface生命周期走）
+    - BufferQueue四状态归属：FREE/DEQUEUED(GL持有)/QUEUED(已提交)/ACQUIRED(SF持有)

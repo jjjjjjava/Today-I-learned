@@ -1,0 +1,23 @@
+id: 004
+title: 视频加水印项目
+category: project
+core: true
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 5
+created: 2026-03-02
+project_path: 待补充
+stability_score: 50
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: weak
+  score: 2
+  mode: skip_check
+  weak_points: []
+  suggested_interval_days: null
+notes: OpenGL+MediaCodec优化方案，从2分钟优化到13秒，包含解码、渲染、编码、封装全流程

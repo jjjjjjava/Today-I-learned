@@ -5,21 +5,20 @@ core: true
 level: 2
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-04-01
+last_study: 2026-04-01
+next_review: 2026-04-15
 importance: 5
 created: 2026-03-24
-stability_score: 65
-consecutive_success: 3
+stability_score: 70
+consecutive_success: 4
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
+  date: 2026-04-01
   result: good
   score: 4
-  mode: qa
-  weak_points:
-    - 默认FBO color attachment说"指向Surface"→更准确是指向GraphicBuffer（Surface背后的内存块）
-  suggested_interval_days: 5
+  mode: recall
+  weak_points: []
+  suggested_interval_days: 14
 related_cards: [17, 24, 27]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
@@ -58,39 +57,3 @@ notes: |
        - 手机GPU集成在SoC中，和CPU共用同一块物理RAM，无独立VRAM
        - GraphicBuffer通过ION/gralloc分配，是物理内存中的跨进程跨硬件共享缓冲区
        - 零拷贝成立原因：解码器和GPU访问的是同一块物理内存
-
-sub_points:
-  - id: sp1
-    desc: "双Surface必要性：视频60fps每帧8MB，直接texImage2D传输480MB/s+频繁GC不可行，需零拷贝+双Surface架构"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "双Surface角色：Surface1（输入）MediaCodec→BufferQueue→SurfaceTexture→OES纹理；Surface2（输出）GLSurfaceView默认帧缓冲→屏幕"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "四阶段渲染：MediaCodec硬解→写GraphicBuffer → updateTexImage零拷贝→OES纹理 → GLSL采样渲染 → eglSwapBuffers→SurfaceFlinger"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "Surface1创建流程：GL线程创SurfaceTexture→回调传主线程→new Surface(st)→MediaCodec.configure(surface)（SurfaceTexture必须在GL线程创建）"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "默认FBO(0) color attachment指向GraphicBuffer（物理内存块），不是Surface（Surface是生产者接口）"
-    status: weak
-    last_reviewed: 2026-03-27
-  - id: sp6
-    desc: "FBO离屏渲染：FBO是容器（画架），纹理附件是存储（画布）；glBindFramebuffer(0)画到屏幕，滤镜链OES→FBO1→FBO2→默认帧缓冲"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp7
-    desc: "UMA统一内存架构：手机GPU集成SoC共用物理RAM，GraphicBuffer通过ION/gralloc分配，解码器和GPU访问同一物理内存实现零拷贝"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6, sp7]
-    result: good
-    score: 4

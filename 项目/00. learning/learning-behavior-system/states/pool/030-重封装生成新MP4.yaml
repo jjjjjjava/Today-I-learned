@@ -1,0 +1,78 @@
+id: 030
+title: 重封装生成新MP4
+category: android
+core: true
+level: 2
+review_stage: 0
+status: pool
+last_study: 2026-04-01
+next_review: null
+importance: 5
+created: 2026-04-01
+stability_score: 0
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: 2026-04-01
+  result: weak
+  score: null
+  mode: teacher_quick
+  weak_points:
+    - 整体四线程流水线结构
+    - drain() INFO_OUTPUT_FORMAT_CHANGED 时序（必须先 addTrack 才能写数据）
+    - VideoEncoder COLOR_FormatSurface + createInputSurface() 与 EGL 的连接
+    - EGL RENDER_WHEN_DIRTY + setTimestamp(pts) 的作用
+    - 整合流程：视频帧同时触发 notifySwap + encodeOneFrame
+  suggested_interval_days: null
+notes: |
+  学习来源：00. learning/learning-behavior-system/code/生成一个MP4.md
+  前置：021双Surface + 025多画面渲染 + 027深入理解EGL + 028FBO
+
+  本文定位：系列终章，把 MediaCodec解码 + OpenGL渲染 + EGL + FBO + MMuxer 串成完整闭环
+
+  2026-04-01 状态差，快速带看，未完整消化，放 pool 待后续激活。
+
+  核心理解：
+    两条流水线独立运行，在 MMuxer 汇合：
+    - 视频：VideoDecoder → SurfaceTexture → OpenGL → EGL渲染到编码器Surface → MediaCodec自动编码
+    - 音频：AudioDecoder → PCM帧 → AudioEncoder手动 queueInputBuffer → MediaCodec编码
+
+  关键设计点：
+    - 视频用 Surface 模式（createInputSurface），MediaCodec 自动取帧，CPU 不参与
+    - 音频手动 queueInputBuffer 压 PCM 数据
+    - 两个解码器都 withoutSync()，去掉音视频同步，最快速度跑完
+    - EGL 改为 RENDER_WHEN_DIRTY，解码一帧触发一次渲染
+    - swapBuffers 前必须 setTimestamp(pts)，否则编码时间线乱
+
+sub_points:
+  - id: sp1
+    desc: "整体架构：两条流水线（视频=Surface自动编码；音频=手动queueInputBuffer）在MMuxer汇合；五个线程（视频解码/音频解码/视频编码/音频编码/RenderThread）"
+    status: ok
+    last_reviewed: 2026-04-01
+  - id: sp2
+    desc: "BaseEncoder骨架：abstract Runnable，帧队列+wait/notify；手动编码(encodeManually=true)vs自动编码(false)；结束方式：手动=压EOS帧，自动=signalEndOfInputStream（坑：部分机型不产生EOS输出，直接mIsEOS=true）"
+    status: ok
+    last_reviewed: 2026-04-01
+  - id: sp3
+    desc: "drain()四种分支：TRY_AGAIN_LATER=break；OUTPUT_FORMAT_CHANGED=必须立刻addTrack（MMuxer要求先addTrack才能writeData）；CODEC_CONFIG=跳过SPS/PPS；正常帧=writeData+releaseOutputBuffer"
+    status: weak
+    last_reviewed: 2026-04-01
+  - id: sp4
+    desc: "VideoEncoder：COLOR_FormatSurface（数据来自Surface非ByteBuffer）+ createInputSurface()返回给EGL当渲染窗口；bitrate=3*W*H；码率模式CQ优先降级VBR；encodeManually=false"
+    status: weak
+    last_reviewed: 2026-04-01
+  - id: sp5
+    desc: "EGL改造：新增setSurface(Surface,w,h)接受编码器Surface；RENDER_WHEN_DIRTY=渲染后holdOn等notifySwap；setTimestamp(pts)在swapBuffers前必须调，把PTS传给MediaCodec时间线"
+    status: weak
+    last_reviewed: 2026-04-01
+  - id: sp6
+    desc: "整合：视频帧回调同时做两件事——notifySwap(pts)触发EGL渲染 + encodeOneFrame(frame)帧信息入队；音频帧直接encodeOneFrame；两个decoderFinish各自调endOfStream；MMuxer两轨完成触发onMuxerFinish"
+    status: weak
+    last_reviewed: 2026-04-01
+
+review_sessions:
+  - date: 2026-04-01
+    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
+    result: weak
+    score: null
+    mode: teacher_quick

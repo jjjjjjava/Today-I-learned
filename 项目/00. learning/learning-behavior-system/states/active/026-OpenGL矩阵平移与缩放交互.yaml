@@ -5,21 +5,22 @@ core: true
 level: 1
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-30
+last_study: 2026-04-01
+next_review: 2026-04-05
 importance: 5
 created: 2026-03-26
-stability_score: 50
-consecutive_success: 2
+stability_score: 52
+consecutive_success: 3
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
-  result: good
-  score: 4
-  mode: qa
+  date: 2026-04-01
+  result: ok
+  score: 3
+  mode: recall
   weak_points:
-    - 无明显问题，scaleFactor路径清晰，ratio /= scaleFactor方向正确且能自行纠错
-  suggested_interval_days: 3
+    - scale后为什么要更新ratio，原理不清楚（结论记住了）
+    - translate时单位换算方向需巩固（世界坐标→NDC，不是反向）
+  suggested_interval_days: 4
 related_cards: [22, 23]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_03.使用OpenGL渲染画中画.md
@@ -57,35 +58,3 @@ notes: |
     D. 触摸事件分发：
     16. 当前项目简化处理：只给上层Drawer注册触摸
     17. 完整方案：hitTest（023逆矩阵判断）+ 从上往下遍历Drawer列表
-
-sub_points:
-  - id: sp1
-    desc: "平移矩阵原理：4×4矩阵第4列存储Tx/Ty/Tz，齐次坐标w=1使乘法变加法；translateM直接修改现有正交矩阵，不创建新矩阵"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "触摸→平移三次转换：手指px→归一化(÷屏幕尺寸)→屏幕比例→×ratio×2→世界坐标距离→Matrix.translateM修改矩阵第4列"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "×ratio×2原因：ratio是NDC扩大倍数，总范围=[-ratio,ratio]=2×ratio；-dy是因Android Y向下OpenGL Y向上需取反"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "缩放原理：正交矩阵本质是缩放矩阵（对角线=缩放系数），scaleM在基础上累积乘；ScaleGestureDetector检测双指捏合scaleFactor=新距离/旧距离"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "缩放后必须更新ratio：mWidthRatio/=sx, mHeightRatio/=sy；矩阵缩小→ratio增大，保证translate算出的距离与缩小后画面同步"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp6
-    desc: "ratio的角色：存VideoDrawer中，initDefMatrix时计算初始值，translate时算世界坐标距离，scale时同步更新；始终保持矩阵缩放系数×ratio=常量"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6]
-    result: good
-    score: 4

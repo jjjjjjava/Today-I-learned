@@ -1,0 +1,90 @@
+id: 031
+title: Service-ANR完整时序源码全流程
+category: android
+core: true
+level: 1
+review_stage: 3
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-30
+importance: 5
+created: 2026-04-13
+stability_score: 85
+consecutive_success: 5
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 21
+related_cards: [030, 032]
+notes: |
+  学习来源：04. 学习_性能优化/ANR_01.基础概念.md §03-§05
+  本卡覆盖：Service ANR 完整源码时序（埋雷-通知App-拆雷-爆雷）
+    2.1 App端发起 ContextImpl→AMS.startService→ActiveServices
+    2.2 AMS埋雷 bumpServiceExecutingLocked 三件事
+    2.3 AMS通知App scheduleCreateService→Binder线程→H→主线程handleCreateService
+    2.4 拆雷 serviceDoneExecuting / executeNesting
+    2.5 爆雷 serviceTimeout 3分支 / isKilled兜底 / appNotResponding
+
+  提问模式复习题（2026-04-13）：
+    Q1. bumpServiceExecutingLocked()是AMS埋雷的核心方法，它做了哪三件
+        关键事情？分别有什么作用？
+        (答案：① r.executingStart=now() 时间戳，诊断+爆雷判定用
+              ② mExecutingServices.add(r) 加入"执行中"集合(进程维度)
+              ③ scheduleServiceTimeoutLocked 埋炸弹消息 前台20s/后台200s
+        易错：mServices(已创建Service集合) ≠ mExecutingServices(回调中集合))
+
+    Q2. executeNesting是什么？它和"炸弹的数量"是同一个东西吗？拆雷判断
+        "集合空了"的时候，用的是executeNesting==0还是别的判断？
+        (核心认知：executeNesting是单ServiceRecord的"in-flight回调计数"，
+         与炸弹数无关。两层判断：内层 r.executeNesting==0 → 移除Record；
+         外层 mExecutingServices.isEmpty() → removeMessages批量拆雷)
+
+    Q3. 20秒到了，炸弹消息从AMS消息队列被取出进入serviceTimeout(proc)，
+        这个方法里有3个分支，分别是什么情况？为什么需要这3个分支？
+        (① isKilled||集合空 → return 误报兜底
+         ② 找到 executingStart<maxTime 的Service → appNotResponding 真ANR
+         ③ 集合非空但没人超时 → 重新postDelayed到"最晚executingStart+20s")
+
+    Q3深度追问：为什么需要分支③重新埋雷？
+        (核心心智模型：雷只是"轮询触发器"，不是"判定器"。雷按"埋下时刻+20s"
+         触发，但真ANR按各Service的executingStart判定，两者经常不一致。
+         典型场景：A早bump埋了雷→A完成→B后bump但不重新埋雷→雷爆时B还没满20s
+         → 必须重排到B的真到期点，否则漏检。
+         一颗雷=一次性使用，看完不报警就要续命)
+
+    Q4. AMS拿到App的ApplicationThread调用scheduleCreateService()通知App
+        创建Service。这个Binder调用在App端是哪个线程接收？接收后怎么交给
+        主线程处理onCreate？
+        (Binder线程池接收 → ApplicationThread仅做 H.sendMessage(CREATE_SERVICE)
+         立刻返回 → 主线程Looper取出 → handleCreateService → 反射创建 → onCreate
+         → serviceDoneExecuting Binder回调拆雷
+         核心：H类是所有AMS→App主线程通信总入口，schedule*/handle*命名约定，
+         Binder线程必须尽快释放，所有耗时切主线程)
+
+    Q5. serviceTimeout第①分支 isKilled||集合空→return。Service的onCreate里
+        反射失败抛RuntimeException。用户看到的是ANR弹框还是Crash？为什么？
+        (Crash。时序：T≈0反射失败→进程死→ProcessRecord.killed=true；
+         T=20雷爆→isKilled()==true→return不弹ANR。
+         核心：Crash是ms级，ANR是20s级，Crash必先发生。
+         isKilled分支就是Crash/ANR的互斥开关，避免对已死进程报ANR)
+
+  appNotResponding()完整流程（2026-04-14补充）：
+    ① 发SIGQUIT(3)给ANR进程 → App的Signal Catcher线程独立响应
+      → dump本进程所有线程堆栈 → 写入/data/anr/traces.txt
+      (Signal Catcher是ART启动时创建的专用线程，主线程死锁它依然能工作)
+    ② 发SIGQUIT给system_server等可疑进程 → 排查是否系统进程拖累了App
+    ③ 收集CPU使用率、内存等系统信息
+    ④ 写DropBox日志（Play Console ANR报告的来源）
+    ⑤ 根据进程类型：
+      前台 → mUiHandler.post(ANR Dialog) → system_server的UiThread绘制弹框
+      后台 → removeProcessLocked() 直接杀进程
+    关键分工：堆栈由App自己dump(system_server看不到App的Java堆栈)；
+             弹框由system_server画(App主线程已瘫痪无法自绘)
+
+  深度认知（易错点）：
+    - mUiHandler属于system_server的UiThread，不是App主线程
+      (前台ANR弹框由system_server自己的UI线程绘制)
+    - 雷按进程埋(msg.obj=ProcessRecord)，批量clear用 removeMessages(what,obj)
+    - 反射失败的异常未捕获→Crash路径，不是ANR路径

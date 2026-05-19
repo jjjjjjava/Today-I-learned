@@ -1,0 +1,207 @@
+id: 033
+title: ANR-traces解读与实战诊断
+category: android
+core: true
+level: 1
+review_stage: 1
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-13
+importance: 5
+created: 2026-04-14
+stability_score: 60
+consecutive_success: 2
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 4
+weak_points:
+  - C类线程状态只有RUNNABLE，不是"RUNNABLE+WAITING"；WAITING一定是B类
+  - B类唯一确定的CPU特征是App CPU低；系统CPU不一定低（其他进程可能很忙）
+  - "两者都低→可能B类"是SOP里的启发式标记，不是B类的定义特征，最终靠堆栈确认
+related_cards: [030, 031, 032, 034]
+notes: |
+  学习来源：ANR trace 实战诊断六轮精炼
+  本卡覆盖：ANR本质 / 根因三分类 / 六步诊断SOP / 锁链追踪 / 高频陷阱 / 特殊Pattern / 诊断原则
+
+  ========== 一、ANR 本质与超时阈值 ==========
+  本质：主线程的消息循环（Looper/MessageQueue）在规定时间内没有处理完任务
+
+  超时阈值：
+    Input 事件（点击/滑动）    5s
+    前台 Service               20s
+    后台 Service              200s
+    Broadcast 前台             5s（历史旧版 10s）
+    Broadcast 后台             60s
+    ContentProvider            10s
+
+  ========== 二、根因三分类 ==========
+  A类：主线程自己做耗时操作（IO / 网络 / 重计算）
+  B类：主线程被困住（锁竞争 / 死锁 / 等notify / Binder超时）
+  C类：主线程抢不到CPU时间片（系统CPU被打满）
+
+  线程状态对应：
+    RUNNABLE + 栈顶IO/计算        → A类
+    BLOCKED                       → B类（抢锁失败）
+    WAITING + 业务对象             → B类（等notify）
+    WAITING + MessageQueue         → ⚠️陷阱，见第五节
+    RUNNABLE + 堆栈正常 + CPU爆满  → C类
+
+  易错点：
+    WAITING ≠ C类
+    WAITING = B类（主动放弃执行权，等其他线程notify）
+    C类只有一种：RUNNABLE 但调度器不分配时间片
+    B类CPU使用率通常很低，不能用"CPU低"推断C类
+
+  ========== 三、六步诊断 SOP ==========
+  收到 ANR trace
+        │
+        ▼
+  【S1】读元信息头（30秒）
+        ├── ANR 类型？Input / Service / Broadcast
+        ├── 超时阈值？Input=5s  Service前台=20s  Broadcast=5s
+        └── Cmd line 确认是我的进程？
+
+        │
+        ▼
+  【S2】读 CPU 快照（1分钟）
+        ├── App CPU > 60%          → 标记"可能A类"
+        ├── 系统 CPU > 90%         → 标记"可能C类"
+        ├── iowait 高              → 标记"可能A类IO"
+        └── 两者都低               → 标记"可能B类"
+        （此时只是标记，看完堆栈再确认）
+
+        │
+        ▼
+  【S3】找主线程，读状态（2分钟）
+        │
+        ├── BLOCKED
+        │     搜 "waiting to lock <地址>"
+        │     → 全文搜 "locked <地址>"
+        │     → 找持锁线程，看它是否也在 waiting → 判断死锁
+        │
+        ├── WAITING
+        │     ├── waiting on MessageQueue  →  ⚠️陷阱，跳 S5
+        │     └── waiting on 业务对象
+        │           搜 "waiting on <地址>"
+        │           → 找应该 notify 但被卡住的线程
+        │
+        └── RUNNABLE
+              ├── 栈顶是 IO/网络调用     → A类，找首个包名帧
+              ├── 栈顶是业务计算代码     → A类，同上
+              └── 堆栈看起来正常         → 结合CPU，C类风险
+
+        │
+        ▼
+  【S4】交叉验证其他线程（2分钟）
+        ├── 是否有多个线程卡在同一方法？     → 计算密集 + C类风险叠加
+        ├── 持锁线程是否也在等锁？           → 死锁
+        ├── 是否有 BinderProxy.transact？    → Binder超时，看system_server
+        └── Finalizer/HeapTask 是否RUNNABLE？→ GC压力（WAITING则忽略）
+
+        │
+        ▼
+  【S5】特殊情况处理
+        ├── 主线程 MessageQueue WAITING（空闲态陷阱）
+        │     这是主线程空闲的正常状态，不是根因，有三种可能：
+        │     可能1：trace快照时机问题（最常见）
+        │             ANR卡顿过程已结束，Bugly抓trace时主线程恰好空闲
+        │             这份trace对根因无效，需结合logcat找真正卡在哪里
+        │     可能2：C类——系统CPU被打满
+        │             主线程想执行但抢不到时间片，状态看起来像空闲
+        │             实际是调度器不给机会，需CPU快照确认
+        │     可能3：系统层问题
+        │             InputDispatcher或system_server侧出现异常
+        │             需看系统日志，不是App代码问题
+        │
+        └── 找不到 locked <地址>
+              → 可能1：持锁线程在trace其他位置，看完整trace
+              → 可能2：持锁线程是native线程，看native堆栈
+              → 可能3：持锁者已释放，结合logcat交叉验证
+              → 没有证据不下结论
+
+        │
+        ▼
+  【S6】输出结论
+        ├── ANR类型
+        ├── 根因描述
+        ├── 根因代码位置（文件:行号）
+        └── 修复方向
+
+  ========== 四、锁链追踪 ==========
+  BLOCKED → 搜 "waiting to lock <0xXXXX>"
+             → 全文搜 "locked <0xXXXX>"
+             → 找到持锁线程
+             → 看持锁线程是否也在 waiting to lock → 死锁
+
+  WAITING → 搜 "waiting on <0xXXXX>"
+             → 找应该调用notify但被卡住的工作线程
+
+  死锁识别：
+    A 持有 X，等待 Y
+    B 持有 Y，等待 X
+    → 互相等待，永远不释放
+    修复：全局统一加锁顺序
+
+  ========== 五、两个高频陷阱 ==========
+  陷阱1：MessageQueue + WAITING
+    "main" WAITING at MessageQueue.next()
+    → 这是主线程空闲的正常状态，不是根因
+    三种可能性：
+    可能1：trace快照时机问题（最常见）
+           ANR卡顿过程已结束，Bugly抓trace时主线程恰好空闲
+           这份trace对根因无效，需结合logcat找真正卡在哪里
+    可能2：C类——系统CPU被打满
+           主线程想执行但抢不到时间片，状态看起来像空闲
+           实际是调度器不给机会，需CPU快照确认
+    可能3：系统层问题
+           InputDispatcher或system_server侧出现异常
+           需看系统日志，不是App代码问题
+
+  陷阱2：Finalizer/HeapTaskDaemon WAITING
+    WAITING = GC空闲，不是GC有压力的证据
+    只有 RUNNABLE 才说明GC有压力
+    → 没有证据不推断GC根因
+
+  ========== 六、特殊 Pattern ==========
+  Binder超时：
+    "main" BLOCKED at BinderProxy.transactNative
+    → 主线程同步调用系统服务（AMS/WMS），对方未及时响应
+    → 不是你的代码bug
+    → 去trace里找system_server进程的Binder线程池状态
+    → 修复：减少主线程同步Binder调用
+
+  多线程同跑同一方法：
+    主线程 + 子线程1 + 子线程2 同时跑 ImageProcessor.applyFilter()
+    → A类（主线程做重计算）+ C类风险（子线程并发打满CPU）
+    → 修复：主线程移出计算 + 限制子线程并发数
+
+  ========== 七、根因速查卡 ==========
+  现象组合                              结论           修复方向
+  RUNNABLE + 栈顶IO + 包名帧            A类IO          移出主线程
+  RUNNABLE + App CPU高 + 业务计算       A类计算         移出主线程
+  BLOCKED + waiting to lock            B类锁竞争       统一加锁顺序
+  BLOCKED + 两线程互相等                B类死锁         统一加锁顺序
+  WAITING + 业务对象 + 工作线程被卡     B类等通知       排查通知链路
+  BLOCKED + BinderProxy                B类Binder超时   减少同步Binder调用
+  RUNNABLE + 堆栈正常 + 系统CPU爆满     C类CPU饥饿      提优先级/限并发
+  WAITING + MessageQueue + CPU正常      trace无效       结合logcat
+  多线程同跑同一计算方法                 A+C叠加         移出主线程+限并发
+
+  ========== 八、高频搜索关键词 ==========
+  定位主线程               "main" prio=5 tid=1
+  找持锁线程               locked <0x地址>
+  找等锁线程               waiting to lock <0x地址>
+  找等通知线程             waiting on <0x地址>
+  找Binder问题             BinderProxy.transact
+  找系统调度线程           InputDispatcher
+  找GC压力证据             HeapTaskDaemon RUNNABLE
+
+  ========== 九、诊断原则 ==========
+  1. trace 是 ANR 触发瞬间的快照，不是卡顿过程的录像
+  2. 没有证据的结论不写进根因
+  3. trace 看不出来的，结合 logcat 交叉验证
+  4. CPU低是B类的标配，不是C类的证据
+  5. 先追锁链，再下结论，不要靠猜

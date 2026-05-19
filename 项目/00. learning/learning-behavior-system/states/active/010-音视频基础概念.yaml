@@ -5,47 +5,97 @@ core: true
 level: 3
 review_stage: 0
 status: active
-last_study: 2026-03-25
-next_review: 2026-04-04
+last_study: 2026-04-10
+next_review: 2026-04-11
 importance: 4
 created: 2026-03-02
-stability_score: 86
-consecutive_success: 7
+stability_score: 78
+consecutive_success: 1
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-25
-  result: good
-  score: 4
-  mode: qa
-  weak_points: []
-  suggested_interval_days: 10
-notes: 编解码格式（H.264/H.265/AAC）、封装格式（MP4/FLV）、码率帧率分辨率
+  date: 2026-04-10
+  result: ok
+  score: 3
+  mode: recall
+  weak_points:
+    - ADTS vs ADIF：思路对（全量头部vs每块独立头部）但名字记反，ADTS(T=Transport)每帧带头适合流式，ADIF(I=Interchange)头部一次适合文件
+  suggested_interval_days: 1
+notes: |
+  ## 2026-04-09 升Level评估（13题，未通过）
+  good(3): Q1 I/P/B/IDR+DTS/PTS / Q2 GOP+trade-off / Q8 编码vs封装
+  ok(1): Q9 moov/mdat(Fast Start不知道)
+  weak(3): Q3 Profile / Q4 NAL+Annex-B/AVCC / Q7 ADTS/ADIF
+  简单了解(1): Q5 H.265（用户标记不深入）
+  跳过(5): Q6 AAC Profile / Q10 TS直播 / Q11 CBR/VBR / Q12 码率计算 / Q13 AAC CSD串联
+  用户反馈：题目太深入，初学阶段不应考察码流层和封装细节
+
+  ## 已掌握的基础（扎实）
+  - I/P/B/IDR帧区别 + IDR的refresh语义（清除参考帧列表）
+  - DTS vs PTS：有B帧时解码顺序≠显示顺序
+  - GOP：IDR开头的帧组，大小trade-off是编码效率vs随机访问粒度
+  - 编码格式(压缩) vs 封装格式(容器)的根本区别
+  - moov存索引和编码参数，mdat存实际数据
+
+  ## 讲解后新学到的知识
+  - **H.264 Profile**：Baseline无B帧无CABAC(低延迟RTC) / Main有B帧有CABAC / High加8x8变换(主流)
+  - **NAL单元**：H.264码流的包装单位，1字节Header含5bit type(7=SPS,8=PPS,5=IDR,1=non-IDR)
+  - **Annex-B vs AVCC**：起始码(00 00 00 01)分隔 vs 长度前缀分隔；Annex-B流式友好(TS/RTP)，AVCC随机访问友好(MP4)；SPS/PPS在AVCC中存于avcC box而非码流中
+  - **ADTS vs ADIF**：AAC版的Annex-B vs AVCC；ADTS每帧带7字节同步头(流式传输)，ADIF头部一次性(文件存储)
+  - **Fast Start**：moov前置到文件头，下载几KB就能开始播放；默认moov在尾部需下载完整文件
+
+  ## 2026-04-10 弱点复习（3题）
+  good(2): NAL+Annex-B/AVCC(完整逻辑链串到CSD和Fast Start) / Profile(三档+场景)
+  ok(1): ADTS/ADIF(思路对但名字记反)
+
+  ## 面试要点详细版
+
+  ### NAL单元与码流格式
+
+  H.264编码输出是一串连续的二进制数据，里面既有解码配置信息（SPS/PPS），又有实际帧数据（IDR/P/B），需要一种方式来区分。这就是NAL（Network Abstraction Layer，网络抽象层）协议。
+
+  编码器输出被打包成一个个NALU（NAL Unit），每个NALU包含header和payload。header中有type字段：
+  - type=7 → SPS（Sequence Parameter Set，序列参数集：分辨率、profile、level）
+  - type=8 → PPS（Picture Parameter Set，图像参数集：量化参数、熵编码模式）
+  - type=5 → IDR帧（Instantaneous Decoder Refresh）
+  - type=1 → 非IDR帧（P/B帧）
+  SPS+PPS就是MediaCodec中的CSD（csd-0和csd-1）。
+
+  NALU长度不一，两种分隔方案：
+
+  Annex-B（起始码分隔）：每个NALU前放固定分隔符00 00 00 01，从任意位置扫描都能找到分隔符开始解析。适合直播、TS流、RTP网络传输。
+
+  AVCC（长度前缀分隔）：每个NALU前放4字节长度值，知道长度就能直接跳过。SPS/PPS不在码流中，存在MP4容器的avcC box里。适合需要频繁seek的点播/流媒体（MP4封装）。代价是必须先下载moov才能解码。
+
+  这引出Fast Start：默认moov在文件末尾，网络播放需下载完整文件。moov前置后下载几KB即可开始播放。ffmpeg用-movflags faststart配置。
+
+  ### H.264 Profile
+
+  Profile是编码工具集的三个等级：
+  - Baseline：只有I帧和P帧，无B帧，无CABAC（只有CAVLC）。编解码延迟最低。适合视频通话、低延迟直播。
+  - Main：引入B帧+CABAC熵编码（比CAVLC压缩率高10~15%）。适合电视广播、标清视频。
+  - High：在Main基础上加8x8变换、量化缩放矩阵。压缩率最高，解码性能要求最高。适合高清/4K、蓝光、流媒体主流选择。
+  压缩效率：Baseline < Main < High，复杂度也递增。
+
+  ### ADTS vs ADIF
+
+  AAC码流的两种打包格式，与H.264的Annex-B vs AVCC是同一问题在音频领域的翻版：
+  - ADTS（Audio Data Transport Stream）：每帧带7字节同步头（含同步字0xFFF、Profile、采样率、声道数、帧长度），每帧自描述可独立解码。适合直播、网络流、TS封装。T=Transport记忆。
+  - ADIF（Audio Data Interchange Format）：头部信息只在文件开头写一次，更紧凑但必须从头读。适合本地文件存储。I=Interchange记忆。
+  实际MP4中两者都不用，AAC参数存在esds box中，和H.264的avcC思路一致。
+
+  ### moov box内部结构补充
+
+  stbl（Sample Table）是moov的核心索引表：
+  - stsd：编码参数（avcC box存SPS/PPS）
+  - stts：时间→样本映射（DTS）
+  - ctts：CTS偏移（PTS = DTS + CTS）
+  - stss：关键帧索引（哪些帧是IDR → seek用）
+  - stsz：每个样本的大小
+  - stco：chunk在文件中的偏移量（指向mdat中的位置）
+  没有stbl就无法seek，也无法知道该读mdat的哪段数据。
+
+  ## 下次复习重点考察
+  - ADTS vs ADIF：T=Transport(每帧带头,流式) / I=Interchange(头部一次,文件)，不要记反
+  - NAL逻辑链能否完整串出：为什么需要→type区分→分隔问题→两种方案→Fast Start
+  - Profile三档核心差异（Baseline无B帧无CABAC）
 related_cards: [9, 11]
-
-sub_points:
-  - id: sp1
-    desc: "视频编码格式对比：H.264 vs H.265（压缩率、兼容性、应用场景）"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp2
-    desc: "音频编码格式：AAC vs MP3（音质、压缩率、移动端适用性）"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp3
-    desc: "封装格式：MP4 vs FLV vs TS（容器结构差异与流媒体适用性）"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp4
-    desc: "码率、帧率、分辨率的关系及对视频质量/文件大小的影响"
-    status: good
-    last_reviewed: 2026-03-25
-  - id: sp5
-    desc: "关键帧（I帧）、P帧、B帧的作用与编解码依赖关系"
-    status: good
-    last_reviewed: 2026-03-25
-
-review_sessions:
-  - date: 2026-03-25
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
-    result: good
-    score: 4

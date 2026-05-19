@@ -1,0 +1,22 @@
+id: 016
+title: 帧队列与独立渲染线程
+category: android
+core: false
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 3
+created: 2026-03-16
+stability_score: 50
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: weak
+  score: 2
+  mode: skip_check
+  weak_points: []
+  suggested_interval_days: null
+notes: 解码线程+帧队列+渲染线程解耦，Choreographer对齐VSync，视频加水印场景：解码→队列→OpenGL线程取帧渲染+GPU混合水印

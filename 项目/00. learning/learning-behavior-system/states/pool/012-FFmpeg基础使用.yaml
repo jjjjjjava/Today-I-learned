@@ -1,0 +1,22 @@
+id: 012
+title: FFmpeg基础使用
+category: android
+core: false
+level: 0
+review_stage: 0
+status: pool
+last_study: null
+next_review: null
+importance: 3
+created: 2026-03-02
+stability_score: 50
+consecutive_success: 0
+consecutive_failures: 0
+last_assessment:
+  date: null
+  result: weak
+  score: 2
+  mode: skip_check
+  weak_points: []
+  suggested_interval_days: null
+notes: 命令行工具、常见操作（转码裁剪合成）、Android集成

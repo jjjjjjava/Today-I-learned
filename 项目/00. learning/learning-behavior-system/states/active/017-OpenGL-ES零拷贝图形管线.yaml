@@ -5,22 +5,20 @@ core: true
 level: 2
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-30
+last_study: 2026-04-01
+next_review: 2026-04-05
 importance: 5
 created: 2026-03-18
-stability_score: 54
-consecutive_success: 5
+stability_score: 58
+consecutive_success: 6
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
+  date: 2026-04-01
   result: ok
   score: 3
-  mode: qa
-  weak_points:
-    - updateTexImage说成"上传纹理到GPU"→实际是更新OES纹理引用指向新GraphicBuffer，是引用更新非拷贝，零拷贝的本质
-    - onFrameAvailable→GL线程的传递流程初次表述不完整，补充后理解正确
-  suggested_interval_days: 3
+  mode: recall
+  weak_points: []
+  suggested_interval_days: 4
 related_cards: [18, 21, 27]
 notes: |
   CPU路径瓶颈：1080p 30fps → 90MB/s，三个问题：YUV→RGB CPU计算/内存分配/glTexImage2D拷贝
@@ -40,31 +38,3 @@ notes: |
     - 硬件sampler自动完成YUV→RGB，不是shader手写
   完整数据流：视频文件→MediaCodec硬件解码→GraphicBuffer→BufferQueue→SurfaceTexture
               →updateTexImage→EGLImage→OES纹理→GPU shader→EGLSurface→SurfaceFlinger→屏幕
-
-sub_points:
-  - id: sp1
-    desc: "BufferQueue 三缓冲机制（producer/consumer + 3 个 GraphicBuffer/ION 共享显存）"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "updateTexImage 本质（引用更新非拷贝，必须在 GL 线程调用）"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "EGLImage 绑定机制（eglCreateImageKHR → glEGLImageTargetTexture2DOES）"
-    status: weak
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "GL_TEXTURE_EXTERNAL_OES vs GL_TEXTURE_2D（外部纹理 = 引用不拥有内存）"
-    status: ok
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "完整数据流：MediaCodec → GraphicBuffer → BufferQueue → SurfaceTexture → GPU → 屏幕"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp4, sp5]
-    result: ok
-    score: 3

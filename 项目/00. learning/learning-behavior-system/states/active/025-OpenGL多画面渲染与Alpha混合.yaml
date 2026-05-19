@@ -5,21 +5,20 @@ core: true
 level: 1
 review_stage: 0
 status: active
-last_study: 2026-03-27
-next_review: 2026-03-30
+last_study: 2026-04-01
+next_review: 2026-04-05
 importance: 5
 created: 2026-03-26
-stability_score: 50
-consecutive_success: 2
+stability_score: 53
+consecutive_success: 3
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-27
-  result: good
-  score: 4
-  mode: qa
-  weak_points:
-    - 混合时序表述：说"结果存放到Surface2后再混合"→混合发生在glDrawArrays写入时，GPU blending unit实时完成
-  suggested_interval_days: 3
+  date: 2026-04-01
+  result: ok
+  score: 3
+  mode: recall
+  weak_points: []
+  suggested_interval_days: 4
 related_cards: [20, 24]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_03.使用OpenGL渲染画中画.md
@@ -49,31 +48,3 @@ notes: |
     5. glVertexAttrib1f vs glVertexAttribPointer：
        - Attrib1f：传单个常量，所有顶点共用（适合alpha）
        - AttribPointer：传数组，每个顶点读一个（适合坐标）
-
-sub_points:
-  - id: sp1
-    desc: "SimpleRender改造：单Drawer→Drawer列表，批量createTextureIds(N)，addDrawer顺序=绘制顺序=层叠关系（先加在底层）"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp2
-    desc: "多视频架构本质：N个视频=N套完整管线，MediaCodecₙ→Surfaceₙ→SurfaceTextureₙ→OES纹理ₙ→Drawerₙ"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp3
-    desc: "混合时序：混合发生在glDrawArrays写入时由GPU blending unit实时完成，不是存入Surface2后再混合"
-    status: weak
-    last_reviewed: 2026-03-27
-  - id: sp4
-    desc: "OpenGL混合开启：glEnable(GL_BLEND) + glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)，公式：最终=src×alpha+dst×(1-alpha)"
-    status: good
-    last_reviewed: 2026-03-27
-  - id: sp5
-    desc: "Alpha传递链路：glVertexAttrib1f→attribute float alpha→顶点着色器varying→片元着色器gl_FragColor.a；改进用uniform更合理"
-    status: good
-    last_reviewed: 2026-03-27
-
-review_sessions:
-  - date: 2026-03-27
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5]
-    result: good
-    score: 4

@@ -2,26 +2,23 @@ id: 023
 title: OpenGL坐标系转换与矩阵GPU传递
 category: android
 core: true
-level: 1
-review_stage: 0
+level: 2
+review_stage: 1
 status: active
-last_study: 2026-03-26
-next_review: 2026-03-28
+last_study: 2026-04-02
+next_review: 2026-04-09
 importance: 4
 created: 2026-03-24
-stability_score: 42
-consecutive_success: 1
+stability_score: 62
+consecutive_success: 3
 consecutive_failures: 0
 last_assessment:
-  date: 2026-03-26
-  result: ok
-  score: 3
-  mode: qa
-  weak_points:
-    - 矩阵上传三步中漏了第②步glGetUniformLocation查槽位，直接从orthoM跳到glUniformMatrix4fv
-    - uniform vs attribute区分已掌握（正面进展，上次fail的核心问题已解决）
-    - glGetUniformLocation返回槽位号非内存地址已理解
-  suggested_interval_days: 2
+  date: 2026-04-02
+  result: good
+  score: 4
+  mode: level_up
+  weak_points: []
+  suggested_interval_days: 7
 related_cards: [19, 22, 24]
 notes: |
   学习来源：04. 学习_音视频/03. 音视频_OpenGL_02.使用OpenGL渲染视频画面.md
@@ -61,39 +58,3 @@ notes: |
        - attribute vec2 aCoordinate → 纹理坐标（per-vertex）
        - uniform mat4 uMatrix → 变换矩阵（全局共享）
        - varying vec2 vCoordinate → 传递给片元着色器（经光栅化插值）
-
-sub_points:
-  - id: sp1
-    desc: "三个坐标系：屏幕坐标[0,width/height]原点左上Y向下；NDC[-1,1]原点中心Y向上；纹理坐标[0,1]原点左下"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp2
-    desc: "屏幕→NDC转换：ndcX=(screenX/screenWidth)×2-1；ndcY=-((screenY/screenHeight)×2-1)，Y轴取反因Android Y向下"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp3
-    desc: "NDC→视频坐标（逆矩阵）：orthoM让画面缩小0.28倍，反推要×3.555还原；videoY=ndcY×(1/orthoScale)"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp4
-    desc: "视频坐标→像素坐标：pixelX=(videoX+1)/2×videoWidth；pixelY=(1-videoY)/2×videoHeight（第二次Y翻转）"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp5
-    desc: "矩阵CPU→GPU三步：算矩阵Matrix.orthoM() → 查槽位glGetUniformLocation() → 上传glUniformMatrix4fv()"
-    status: weak
-    last_reviewed: 2026-03-26
-  - id: sp6
-    desc: "GPU端接收：uniform mat4 uMatrix接收矩阵，gl_Position=aPosition×uMatrix，GPU多核并行4个顶点同时计算"
-    status: ok
-    last_reviewed: 2026-03-26
-  - id: sp7
-    desc: "着色器变量：attribute vec4 aPosition(per-vertex)、attribute vec2 aCoordinate(per-vertex)、uniform mat4 uMatrix(全局共享)、varying vec2 vCoordinate(插值传片元)"
-    status: ok
-    last_reviewed: 2026-03-26
-
-review_sessions:
-  - date: 2026-03-26
-    covered_sub_points: [sp1, sp2, sp3, sp4, sp5, sp6, sp7]
-    result: ok
-    score: 3

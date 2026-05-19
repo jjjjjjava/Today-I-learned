@@ -1,0 +1,198 @@
+id: 034
+title: 线上ANR监控三方案（Bugly/xCrash/Matrix）
+category: android
+core: true
+level: 1
+review_stage: 3
+status: active
+last_study: 2026-05-09
+next_review: 2026-05-30
+importance: 5
+created: 2026-04-14
+stability_score: 90
+consecutive_success: 5
+consecutive_failures: 0
+last_assessment:
+  date: 2026-05-09
+  result: good
+  mode: review
+  suggested_interval_days: 21
+related_cards: [030, 031, 032, 033]
+notes: |
+  学习来源：Bugly/xCrash/Matrix 源码分析与对比
+  本卡覆盖：三方案分类框架 / 信号机制前置知识 / 各方案原理与缺陷 / 核心结论
+
+  ========== 一、分类框架（面试切入点）==========
+  按"是否主动参与 ANR 流程"分两类：
+
+  旁观者：Bugly
+    不介入信号流程，观察系统产物
+    等系统做完，自己读结果
+
+  深度介入者：xCrash / Matrix
+    在 native 层注册 sigaction handler，拦截 SIGQUIT
+    在系统处理 ANR 的同时自己 dump 线程栈
+
+  ========== 二、ANR 系统流程回顾 ==========
+  炸弹机制：
+    AMS 通过 Binder 埋炸弹（设定计时器）
+    目标进程处理完事件后通过 Binder 回调 AMS 拆炸弹
+    超时未拆 → 引爆
+
+  引爆后流程：(ART 就是指 Android Runtime 本身，没有所谓的ART线程)
+    AMS 发 SIGQUIT（信号3）给目标 App 进程
+        ↓
+    ART SignalCatcher 线程通过 sigwait() 接收
+        ↓
+    dump 所有线程栈 → 写入 /data/anr/traces.txt
+        ↓
+    AMS 弹出 ANR 对话框 + 发送 ANR 广播
+
+  ========== 三、信号机制基础（前置知识）==========
+  信号无 handler 时的默认行为：
+    不是进队列等待，而是执行该信号的默认行为（Default Action）
+    SIGQUIT 默认行为 = Core Dump（终止进程并生成 core 文件）
+
+  sigaction 模式（推送）：
+    内核主动打断线程，跳转执行 handler 函数
+    信号被消费后从队列消失
+    → 被动接收，内核推送
+
+  sigwait 模式（拉取）：
+    线程主动阻塞等待，自己去取信号
+    ART SignalCatcher 的做法
+    → 主动拉取
+
+  核心冲突：
+    同一信号只能被消费一次
+    sigaction handler 消费了 → sigwait 永远等不到
+    POSIX 明确：同一进程对同一信号混用两者是 undefined behavior
+
+  ========== 四、Bugly（旁观者模式）==========
+  本质：单靠 Watchdog，ANR 广播只做定性确认，FileObserver 已废
+
+  Watchdog 线程（核心检测手段）：
+    死循环执行：
+      置标记位 false
+          ↓
+      post 普通消息到主线程 MessageQueue（消息内置标记位 true）
+          ↓
+      自身 sleep 5s
+          ↓
+      醒来检查标记位，仍为 false → 主线程 MsgQueue 卡住
+          ↓
+      调 Thread.getAllStackTraces() 抓取所有线程 Java 栈，暂存
+
+  ANR 广播（ACTION_ANR_OCCURRED，API 16+）：
+    系统判定 ANR 后发出广播
+    Bugly 收到后与 Watchdog 暂存的栈合并上报
+    作用：定性确认，过滤 Watchdog 误报
+
+  FileObserver 监听 /data/anr/：
+    Android 11+ SELinux 收紧，普通 App 无法读取目录内容
+    此方案已基本失效，现为兜底备选
+
+  Watchdog 缺陷：
+    误报：主线程执行合法长任务（<ANR阈值）也会触发
+    漏报 Input ANR：InputDispatcher 超时不经过 MessageQueue
+               主线程可能一直正常处理消息，但触摸事件 5s 无响应
+               Watchdog 探活通过，系统仍判 ANR
+    采样精度低：5s 一个周期，抓到的栈不是 ANR 爆发的精确瞬间
+    只有 Java 栈：Thread.getAllStackTraces() 看不到 Native 层
+
+  ========== 五、xCrash（链式拦截模式）==========
+  sigaction 注册重量 handler，SIGQUIT 到来时全权处理
+
+  流程：
+    SIGQUIT 到来
+        ↓
+    xc_trace_handler 拦截（sigaction，重量 handler）
+        ↓
+    handler 内完整 dump 所有线程栈（遍历 /proc/self/task/）
+        ↓
+    注销自身 handler
+        ↓
+    raise(SIGQUIT) 补发信号
+        ↓
+    ART SignalCatcher 的 sigwait 尝试接收（不可靠）
+
+  核心问题：时序竞态
+    注销 handler 和 raise() 之间存在时间窗口
+    若 handler 未完全卸载，raise() 的信号又被自己消费
+    ART SignalCatcher 永远收不到 → 是 best-effort，非可靠保证
+
+  额外问题：
+    handler 内调用 malloc / mutex / fprintf 违反 async-signal-safe
+    属于 undefined behavior
+
+  ========== 六、Matrix（委托线程模式）==========
+  handler 极轻，把处理权委托给普通线程，从根本上解决时序问题
+
+  流程：
+    SIGQUIT 到来
+        ↓
+    sigaction handler（极轻）：
+      write(pipe_fd, "1", 1)   ← async-signal-safe，完全合规
+      立即返回
+        ↓
+    dump 线程（阻塞在 read(pipe_fd)）被唤醒
+        ↓
+    完整 dump 所有线程栈
+        ↓
+    注销自身 sigaction handler
+        ↓
+    kill(getpid(), SIGQUIT) 补发
+        ↓
+    ART SignalCatcher 的 sigwait 稳定收到   ✅
+
+  为什么稳定：
+    xCrash：卸载和补发都在 handler 内（信号上下文），时序不可控
+    Matrix：卸载和补发都在普通线程内，顺序完全可控
+            补发时 handler 必然已卸载，不存在竞态
+
+  本质贡献：
+    把"感知信号"和"处理信号"彻底解耦
+    handler 只负责感知（write pipe）
+    普通线程负责处理（dump + 卸载 + 补发）
+    将不可控的信号上下文，转换为完全可控的线程上下文
+
+  ========== 七、三方案对比 ==========
+  |         | Bugly        | xCrash           | Matrix         |
+  |---------|--------------|------------------|----------------|
+  | 介入层面 | 不介入       | sigaction 重量   | sigaction 极轻 |
+  | handler | 无           | 完整 dump        | 写 1 字节      |
+  | 转发可靠 | 无需转发     | 竞态，不可靠     | 时序可控，可靠 |
+  | POSIX   | ✅           | ❌               | ✅             |
+  | 高版本  | FileObserver受限 | 一般         | 好             |
+
+  ========== 八、核心结论 ==========
+  SignalCatcher 能否收到补发信号，只取决于一件事：
+    补发信号时，sigaction handler 是否已完全卸载
+
+  handler 还在 → 补发信号又被自己消费 → SignalCatcher 收不到
+  handler 已卸载 → 信号进队列 → sigwait 取到 → SignalCatcher 正常处理
+
+  xCrash 在信号上下文内操作，时序不可控，是 best-effort
+  Matrix 在普通线程内操作，时序完全可控，SignalCatcher 必然收到
+
+  ========== 九、用户口述版本（2026-04-24）==========
+  按是否主动拦截 SIGQUIT 分两类：
+  旁观者（Bugly）不介入信号，深度介入者（xCrash/Matrix）注册 sigaction handler 拦截 SIGQUIT。
+
+  Bugly 三部件：
+  ① 系统广播（ACTION_ANR_OCCURRED）→ 定性确认是否真 ANR
+  ② FileObserver 监听 /data/anr/ → Android 11+ SELinux 收紧，基本失效
+  ③ Watchdog 线程（核心）：标记位置 false → post msg 到主线程（msg内置复位逻辑）
+     → sleep 5s → 醒来检查标记位，仍为 false → dump 所有线程栈 → 结合广播上报
+  Watchdog 盲点：漏报 Input ANR（触摸事件不经 MessageQueue，Watchdog 探活通过但系统仍判 ANR）
+
+  xCrash：sigaction 注册重量 handler，SIGQUIT 到来时在 handler 内完整 dump 线程栈。
+  根本限制：handler 处于信号上下文，只能用 async-signal-safe 函数，malloc/Java调用/IO 均不合规。
+  时序问题：卸载 handler 和 raise(SIGQUIT) 之间存在窗口，信号可能被自己再次消费，
+            SignalCatcher 收不到 → best-effort，非可靠保证。
+
+  Matrix：handler 极轻，只做 write(pipe_fd, "1", 1)（async-signal-safe 合规）立即返回。
+  dump 线程阻塞在 read(pipe_fd)，被唤醒后在普通线程上下文完成：
+  dump 所有线程栈 → 注销 handler → kill(getpid(), SIGQUIT) 补发。
+  因为卸载和补发都在普通线程内，顺序完全可控，SignalCatcher 必然收到。
+  本质：把"感知信号"（handler）和"处理信号"（普通线程）彻底解耦。

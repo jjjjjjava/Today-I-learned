@@ -1,0 +1,107 @@
+id: 028
+title: FBO深度应用与灵魂出窍滤镜
+category: android
+core: true
+level: 3
+review_stage: 2
+status: active
+last_study: 2026-04-08
+next_review: 2026-04-22
+importance: 5
+created: 2026-03-30
+stability_score: 12
+consecutive_success: 1
+consecutive_failures: 0
+last_assessment:
+  date: 2026-04-08
+  result: level_up
+  score: 4
+  mode: quiz
+  weak_points:
+    - FBO API五步中遗漏滤波参数设置（glTexParameteri MIN/MAG filter）
+    - Y轴翻转记住结论但底层原因（NDC vs 屏幕坐标系差异、EGL自动翻转）需巩固
+    - 架构串联（SurfaceTexture/EGLSurface/FBO Texture三者角色）表达需打磨
+  suggested_interval_days: 14
+notes: |
+  学习来源：04. 学习_音视频/03. 音视频_OpenGL_05.OpenGL FBO数据缓冲区.md
+  代码来源：00. learning/learning-behavior-system/code/FBO.md
+  前置：021双Surface架构 + 025多画面渲染 + 027深入理解EGL
+
+  核心理解（2026-04-01）：
+    整体是两套渲染逻辑，中间难点是资源的切换和挂载：
+    逻辑A：每500ms → 渲染到自定义FBO（冻结帧快照）
+    逻辑B：每帧     → 双纹理混合渲染上屏（实时帧 + 冻结帧）
+
+  1. FBO本质：
+     - 不存数据，只持有attachment索引（颜色/深度/模板）
+     - 默认FBO(0)：eglMakeCurrent时color attachment → GraphicBuffer → 屏幕
+     - 自定义FBO：color attachment → 开发者指定的Texture → GPU内部留存
+
+  2. 三方案对比（多层滤镜场景）：
+     - 方案A（无FBO）：渲染到屏幕→读回CPU→上传GPU，每层一次CPU↔GPU传输
+     - 方案B（EGL离屏/SurfaceTexture）：零拷贝但有BufferQueue锁+CPU futex唤醒开销
+     - 方案C（FBO）：GPU内部寄存器指针切换，几乎零开销，代价是多占一块显存
+
+  3. FBO 5步API：
+     step1 createFBOTexture：
+       glGenTextures分配ID → glBindTexture绑到默认纹理单元（只为配置）
+       → glTexImage2D(null) 分配空显存（白纸内存）
+       → 设过滤参数 → glBindTexture(0)解绑防误改
+
+     step2 createFrameBuffer：
+       glGenFramebuffers创建空FBO，此时无任何attachment
+
+     step3 bindFBO（建立连接）：
+       glBindFramebuffer激活FBO → glFramebufferTexture2D把纹理挂到GL_COLOR_ATTACHMENT0
+       之后所有渲染输出 → 写入该纹理显存
+
+     step4 unbindFBO：
+       glBindFramebuffer(GL_NONE) 恢复默认FBO → 渲染目标回到屏幕
+
+     step5 deleteFBO：
+       解绑 → glDeleteFramebuffers → 解绑纹理 → glDeleteTextures
+
+  4. 灵魂出窍代码执行流：
+
+     draw() 主流程：
+       updateFBO()           → 每500ms冻结一帧到mSoulTextureId
+       activateSoulTexture() → mSoulTextureId绑到纹理单元1
+       activateDefTexture()  → OES实时帧绑到纹理单元0
+       updateTexture()       → updateTexImage()刷新OES最新帧
+       doDraw()              → 双纹理混合上屏
+
+     updateFBO() 内部：
+       bindFBO(mSoulFrameBuffer, mSoulTextureId)
+       configFboViewport() → 单位矩阵 + 翻转顶点 + viewport=视频尺寸 + 清屏
+       activateDefTexture() + updateTexture()  ← 输入：实时帧
+       doDraw()  ← 输出：写入FBO纹理（drawFbo=1，shader直接写色不混合）
+       unbindFBO() + configDefViewport()
+
+  5. configFboViewport三要素：
+     - 单位矩阵：FBO纹理尺寸=视频尺寸，无需宽高比校正
+     - mReserveVertexCoors（Y翻转）：
+       纹理坐标和NDC方向一致（原点左下，Y向上）
+       渲染到屏幕时EGL自动翻转（弥补屏幕Y向下的差异），FBO没有这个翻转
+       所以FBO里的图像方向和屏幕显示的方向相反，需要手动翻转顶点坐标补偿
+       不翻转则冻结帧倒置，后续采样时是倒图
+     - glViewport(0,0,videoW,videoH)：渲染区域匹配FBO纹理尺寸
+
+  6. 着色器双纹理混合：
+     - drawFbo flag（uniform int）：
+       drawFbo=1（渲染到FBO）→ 直接写色 gl_FragColor=vec4(color.rgb, inAlpha)
+       drawFbo=0（渲染到屏幕）→ 混合    gl_FragColor=color*(1-alpha)+soulMask*alpha
+     - progress自动增大：
+       每帧doDraw()计算 progress=(currentTime-mModifyTime)/500f，帧回调驱动
+       mModifyTime每500ms重置 → progress自动0→1循环
+     - scale放大原理（坐标收缩）：
+       soulX = 0.5 + (vCoordinate.x - 0.5) / scale
+       scale=1.5时屏幕[0,1]只采样纹理[0.167,0.833]中心区域，拉伸到全屏=放大
+     - alpha消散：alpha = 0.6 * (1.0 - progress)，scale越大alpha越小
+
+  升Level评估记录（2026-04-08）：
+    5轮提问模式，覆盖概念/API/架构/陷阱/设计
+    轮1 FBO本质：优秀，主动延伸到SurfaceFlinger链路
+    轮2 API五步：需提示后答出，漏了glTexParameteri
+    轮3 架构串联：理解正确，表达需打磨
+    轮4 Y轴翻转：记住结论但忘了NDC/EGL底层原因
+    轮5 多级FBO设计：链路正确，学到Ping-Pong FBO和降采样优化
