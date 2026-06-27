@@ -1,0 +1,767 @@
+Name	COUNT	SUM(Wall Duration)	SUM(Self Duration)	AVG(Wall Duration)
+Choreographer#doFrame	10	753684219	287504	75368421.9
+traversal	10	750074999	73848695	75007499.9
+inflate	106	700769897	198351995	6611036.764150944
+RV OnLayout	29	518290831	235572499	17872097.620689657
+layout	10	516116041	4136823	51611604.1
+activityStart	2	469546874	90180572	234773437
+WebView	2	229911562	52827656	114955781
+binder transaction	579	226288277	226288277	390826.0397236615
+bindApplication	1	220520313	69324217	220520313
+WebViewChromium.init	2	102241824	594898	51120912
+draw	13	83281404	51795259	6406261.846153846
+ResourcesManager#applyConfigurationToResourcesLocked	5	70711248	67548489	14142249.6
+WebViewChromiumFactoryProvider.startYourEngines	61	65283327	234317	1070218.475409836
+WebViewChromiumAwInit.startChromiumLocked	1	65049010	1759686	65049010
+OpenDexFilesFromOat	4	60227813	3065158	15056953.25
+AwBrowserProcess.start	1	50928958	1160780	50928958
+AwBrowserProcess.startBrowserProcessesSync	1	47675469	39455316	47675469
+res/5G0.png	1	47121979	47098229	47121979
+/data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk	1	41749479	371927	41749479
+AppImage:Loading	3	36089375	115781	12029791.666666666
+WebViewChromium.initForReal	2	34285625	470521	17142812.5
+AwContents.constructor	2	33815104	25909847	16907552
+WebViewChromiumFactoryProvider.initialize	1	33252812	4229478	33252812
+Record View#draw()	12	31486145	29729482	2623845.4166666665
+activityResume	2	26263281	13920883	13131640.5
+measure	20	23770680	17604795	1188534
+LinearLayout	178	22119945	19724581	124269.35393258427
+WebViewChromiumAwInit.setUpResourcesOnBackgroundThread	1	19921354	19921354	19921354
+/system/product/app/WebViewGoogle/WebViewGoogle.apk	1	19380885	523646	19380885
+createClassloaderNamespace	4	18501145	18501145	4625286.25
+com.ovopark.floor.lib_home_data_floor.homeV2View.CircularPercentView	3	17489062	17489062	5829687.333333333
+ResourcesManager#getResources	40	16933438	3659477	423335.95
+VerifyClass com.kedacom.ovopark.ui.HomeOldActivity	1	16285053	16285053	16285053
+FlutterLoader#ensureInitializationComplete	1	14394270	13701353	14394270
+ActivityThreadMain	1	13983125	4069791	13983125
+Adding image space for location /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk	1	13945000	285883	13945000
+res/8AC.webp	1	12779427	12761510	12779427
+RV CreateView	11	12518384	1979062	1138034.9090909092
+androidx.appcompat.widget.AppCompatEditText	1	12419844	9687968	12419844
+RelocateImage	1	12357292	110000	12357292
+RelativeLayout	62	12158334	10423490	196102.16129032258
+dispatchApplyInsets	13	11990313	10320106	922331.7692307692
+AppImage:Updating	1	11892969	743022	11892969
+res/Sgf.9.png	1	11252084	11212710	11252084
+AppImage:InternString	1	11149947	11149947	11149947
+Shell::CreateWithSnapshot	1	10771979	10741510	10771979
+com.ovopark.widget.CircularProgress	1	10711145	10711145	10711145
+androidx.constraintlayout.widget.ConstraintLayout	43	9977912	8939736	232044.46511627908
+/system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	9763906	436406	9763906
+MapImageFile	1	9592031	940677	9592031
+/system/framework/org.apache.http.legacy.jar	1	9564844	398177	9564844
+Lock contention on JNI shared libraries map lock (owner tid: 27926)	3	9310781	9310781	3103593.6666666665
+broadcastReceiveReg	9	8713127	2918127	968125.2222222222
+Waiting for workers	1	8651354	215209	8651354
+LZ4 decompress block	14	8436145	8436145	602581.7857142857
+serviceBind	1	8237135	375156	8237135
+res/0m1.webp	1	8163958	8128489	8163958
+res/CEm.webp	1	7857187	7829270	7857187
+Open oat file /data/dalvik-cache/arm64/system@product@app@WebViewGoogle@WebViewGoogle.apk@classes.dex	1	7658072	7658072	7658072
+Open dex file /system/framework/org.apache.http.legacy.jar	1	6986354	4167	6986354
+Dex file open Zip /system/framework/org.apache.http.legacy.jar	1	6982187	37656	6982187
+Dex file open from Zip /system/framework/org.apache.http.legacy.jar	1	6944531	13124	6944531
+Dex file open from Zip Archive /system/framework/org.apache.http.legacy.jar	1	6927500	6927500	6927500
+LoadApkAssets(/system/product/app/WebViewGoogle/WebViewGoogle.apk)	3	6142760	3141563	2047586.6666666667
+Fixup objects	1	6018334	6018334	6018334
+DartMessenger#handleMessageFromDart on dev.fluttercommunity.plus/device_info	1	5977812	1132082	5977812
+Lock contention on InternTable lock (owner tid: 0)	11	5810574	5810574	528234
+com.ovopark.lib_base_webview.widget.ConflictWebView	1	5669584	1927760	5669584
+androidx.recyclerview.widget.RecyclerView	21	5283906	5283906	251614.57142857142
+WebViewChromium.constructor	2	5025782	1360626	2512891
+serviceCreate: CreateServiceData{token=android.os.BinderProxy@4cc3f0f className=com.amap.api.location.APSService packageName=com.kedacom.ovopark intent=null}	1	4879844	4879844	4879844
+Open oat file /data/dalvik-cache/arm64/system@product@app@TrichromeLibrary@TrichromeLibrary.apk@classes.dex	1	4761979	4583593	4761979
+Lock contention on runtime shutdown lock (owner tid: 28208)	1	4345365	4345365	4345365
+com.flyco.tablayout.widget.MsgView	12	4292970	4179272	357747.5
+AssetManager::OpenXmlAsset(res/layout/screen_simple.xml)	3	4037968	4037968	1345989.3333333333
+com.kedacom.lib_video.widget.IjkPlayView	1	4018333	3444271	4018333
+com.youth.banner.Banner	1	3967448	467708	3967448
+FrameLayout	52	3965938	3792188	76268.03846153847
+VerifyClass com.gyf.immersionbar.ImmersionBar	1	3827239	3827239	3827239
+FlutterEngineConnectionRegistry#add FlutterToastPlugin	1	3720937	110468	3720937
+AssetManager::SetApkAssets	12	3686613	3686613	307217.75
+Fixup classes	1	3673490	3673490	3673490
+ProgressBar	1	3661979	1238282	3661979
+WebViewChromiumFactoryProvider.initCommandLine	1	3640209	3640209	3640209
+VerifyClass io.github.ponnamkarthik.toast.fluttertoast.MethodCallHandlerImpl	1	3610469	3610469	3610469
+PostFork	1	3601667	2662656	3601667
+LoadedArsc::LoadTable	8	3504636	118752	438079.5
+ResourcesImpl#updateConfiguration	12	3495312	732968	291276
+WebViewChromiumAwInit.initThreadUnsafeSingletons	1	3449948	3120002	3449948
+View	34	3408697	3183853	100255.79411764706
+LoadedPackage::Load	8	3385884	3385884	423235.5
+Startup	1	3289323	419532	3289323
+com.flyco.tablayout.CommonTabLayout	2	3185937	3185937	1592968.5
+animation	7	2878854	2878854	411264.85714285716
+VerifyClass com.ovopark.ui.base.ToolbarActivity	1	2830729	2830729	2830729
+me.relex.circleindicator.CircleIndicator2	1	2773282	2649271	2773282
+WebViewChromiumAwInit.LibraryLoader	1	2764896	2761198	2764896
+AssetManager::SetConfiguration	12	2762344	2762344	230195.33333333334
+VerifyClass com.kedacom.ovopark.services.LocationReportService	1	2761198	2761198	2761198
+WebViewChromiumFactoryProvider.loadChromiumLibrary	1	2739531	2635571	2739531
+FlutterLoader#startInitialization	1	2725209	1723177	2725209
+com.ovopark.widget.ScrollImageView	2	2715261	345052	1357630.5
+com.facebook.drawee.view.SimpleDraweeView	1	2648854	2648854	2648854
+com.ovopark.widget.BorderTextView	6	2575729	2575729	429288.1666666667
+WebViewChromiumAwInit.doNetworkInitializations	1	2571615	1541198	2571615
+com.scwang.smart.refresh.footer.ClassicsFooter	2	2333124	573593	1166562
+decodeBitmap	2	2329428	2329428	1164714
+Theme::ApplyStyle	56	2230415	2230415	39828.83928571428
+LoadApkAssets(/data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk)	1	2179011	1755834	2179011
+com.makeramen.roundedimageview.RoundedImageView	4	2106511	2106511	526627.75
+DartMessenger#handleMessageFromDart on dev.fluttercommunity.plus/package_info	1	1931510	1060208	1931510
+WebViewChromium.ContentSettingsAdapter	2	1876302	1220000	938151
+Lock contention on InternTable lock (owner tid: 27893)	45	1758385	1758385	39075.22222222222
+VerifyClass com.kedacom.ovopark.services.WebSocketService	1	1729531	1729531	1729531
+Lock contention on InternTable lock (owner tid: 27904)	59	1663908	1663908	28201.830508474577
+Open oat file /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/oat/arm64/base.odex	1	1623125	1623125	1623125
+Fixup methods	1	1618906	1618906	1618906
+makeApplication	1	1578906	1348281	1578906
+AwBrowserProcess.handleMinidumpsAndSetMetricsConsent	1	1555625	1187240	1555625
+WebViewChromiumAwInit.initPlatSupportLibrary	1	1554271	1554271	1554271
+VerifyClass dev.fluttercommunity.plus.packageinfo.PackageInfoPlugin	1	1465938	1332135	1465938
+Lock contention on InternTable lock (owner tid: 27909)	7	1462291	1462291	208898.7142857143
+res/ytK.png	1	1441875	1411458	1441875
+res/DLk.png	1	1414271	1379896	1414271
+VerifyClass cn.jiguang.a.a	1	1397448	1397448	1397448
+VerifyClass com.ovopark.utils.PermissionUtil	1	1384427	1384427	1384427
+LoadApkAssets(/system/product/app/TrichromeLibrary/TrichromeLibrary.apk)	2	1378907	1332709	689453.5
+Lock contention on InternTable lock (owner tid: 27881)	1	1355573	1355573	1355573
+ProfileInstallerInitializer	1	1347500	464219	1347500
+androidx.cardview.widget.CardView	7	1334425	1334425	190632.14285714287
+WebViewChromiumFactoryProvider.deleteContentsOnPackageDowngrade	1	1250521	1126823	1250521
+AssetManager::OpenXmlAsset(res/anim/linear_interpolator.xml)	1	1231302	1231302	1231302
+VerifyClass com.ovopark.helper.LocationHelper	1	1230989	1230989	1230989
+com.ovopark.widget.CustomMapView	1	1228698	1228698	1228698
+ResourcesManager#createBaseActivityResources	2	1226667	419739	613333.5
+androidx.core.widget.NestedScrollView	4	1206719	1206719	301679.75
+AwContents.getWindowAndroid	1	1203697	49530	1203697
+com.ovopark.widget.CircleImageView	1	1192448	274375	1192448
+AwBrowserProcess.maybeEnable	1	1178281	53958	1178281
+ZygoteInit	1	1154636	1154636	1154636
+androidx.appcompat.widget.AppCompatTextView	2	1153334	919273	576667
+com.ovopark.widget.GradientTextView	1	1150104	1150104	1150104
+AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest	1	1124323	320209	1124323
+FullSuspendCheck	4	1106821	894842	276705.25
+AppImage:UpdateClassLoaders	1	1098490	1098490	1098490
+Dart::Init	1	1055052	553646	1055052
+com.google.android.material.appbar.AppBarLayout	1	1009270	967916	1009270
+androidx.viewpager2.widget.ViewPager2	1	1003959	1003959	1003959
+Lock contention on thread suspend count lock (owner tid: 27881)	19	995940	995940	52417.89473684211
+ViewStub	15	995783	995783	66385.53333333334
+ProcessLifecycleInitializer	1	980260	980260	980260
+BrowserStartupController.prepareToStartBrowserProcess	1	979375	979375	979375
+com.ovopark.floor.lib_home_data_floor.homeV2View.LinePercentView	3	968020	968020	322673.3333333333
+res/color/secondary_text_material_light.xml	3	954895	215520	318298.3333333333
+com.ovopark.floor.lib_home_data_floor.homeV2View.MaxRecyclerView	2	952707	952707	476353.5
+res/xsl.png	1	945261	917240	945261
+res/Ko1.png	2	929010	873489	464505
+res/bYM.png	1	918073	892865	918073
+Lock contention on Class loader classes (owner tid: 18446744073709551615)	1	904532	904532	904532
+res/hqB.xml	1	901093	156250	901093
+FlutterEngineConnectionRegistry#add SharedPreferencesPlugin	1	900625	750208	900625
+com.ovopark.widget.AutoTextView	2	895157	895157	447578.5
+AssetManager::OpenXmlAsset(res/interpolator/fast_out_linear_in.xml)	13	893960	893960	68766.15384615384
+res/color/highlighted_text_material.xml	5	889950	254637	177990
+res/pOh.png	1	883125	860833	883125
+VerifyClass com.google.android.material.bottomsheet.BottomSheetDialog	1	865417	865417	865417
+AssetManager::OpenXmlAsset(res/interpolator/linear_out_slow_in.xml)	12	848230	848230	70685.83333333333
+androidx.coordinatorlayout.widget.CoordinatorLayout	10	826198	826198	82619.8
+AwContents.createActivityWindow	1	816042	816042	816042
+activityPause	1	763594	740573	763594
+androidx.appcompat.widget.FitWindowsLinearLayout	10	755470	755470	75547
+WebViewChromiumFactoryProvider.loadGlueLayerPlatSupportLibrary	1	741614	741614	741614
+AssetManager::OpenXmlAsset(res/color/secondary_text_material_light.xml)	3	739375	739375	246458.33333333334
+res/C3H.png	1	713021	693750	713021
+androidx.appcompat.widget.ContentFrameLayout	11	706510	706510	64228.181818181816
+std::unique_ptr<const DexFile> art::OatDexFile::OpenDexFile(std::string *) const	50	689012	176974	13780.24
+FlutterEngineConnectionRegistry#add WebViewFlutterPlugin	1	687031	687031	687031
+androidx.appcompat.widget.ViewStubCompat	11	686768	686768	62433.454545454544
+com.scwang.smart.refresh.layout.SmartRefreshLayout	3	686355	686355	228785
+res/xpl.png	1	685938	636147	685938
+res/B0Y.png	1	673906	655313	673906
+VerifyClass io.flutter.plugin.text.ProcessTextPlugin	1	666770	666770	666770
+res/CQt.png	1	660729	548385	660729
+res/QmO.webp	1	659740	635677	659740
+VerifyClass com.android.org.conscrypt.SSLParametersImpl	1	657031	657031	657031
+res/BBM.png	1	656459	634480	656459
+res/nX9.png	1	654219	630885	654219
+Lock contention on a monitor lock (owner tid: 27883)	1	649219	649219	649219
+res/AwD.png	1	646615	623594	646615
+res/QFX.png	1	645469	628542	645469
+AssetManager::OpenXmlAsset(res/color/highlighted_text_material.xml)	5	635313	635313	127062.6
+res/cnc.png	1	624479	605781	624479
+res/FUX.webp	1	617292	586147	617292
+res/pE2.png	1	616354	549583	616354
+VerifyClass androidx.activity.ComponentDialog	1	608646	605417	608646
+AssetManager::OpenXmlAsset(res/Mtw.xml)	9	598383	598383	66487
+VectorDrawable#inflate	3	592187	592187	197395.66666666666
+res/MrX.png	1	590052	570937	590052
+com.ovopark.floor.lib_home_data_floor.homeV2View.CircularPercentAreaView	1	570364	570364	570364
+Lock contention on thread list lock (owner tid: 0)	2	568593	568593	284296.5
+com.ovopark.widget.StateView	4	561926	561926	140481.5
+res/CSv.png	1	559427	539947	559427
+res/4Hf.png	1	553333	527292	553333
+res/drawable/progress_indeterminate_horizontal_material.xml	1	547448	180729	547448
+res/dcE.png	1	546354	526614	546354
+res/qZX.png	1	544219	520312	544219
+res/dAl.webp	1	544010	525208	544010
+res/x0m.webp	1	543854	528021	543854
+com.ovopark.widget.ExpandIconView	5	542552	542552	108510.4
+com.scwang.smart.refresh.header.MaterialHeader	2	542396	542396	271198
+res/Jxz.webp	1	537240	478907	537240
+VerifyClass androidx.core.os.LocaleListCompat	1	532656	532656	532656
+res/drawable/scrollbar_handle_material.xml	1	525156	168854	525156
+res/Qv4.webp	1	524844	509114	524844
+VerifyClass com.android.org.conscrypt.SSLUtils	1	521355	521355	521355
+res/tYI.png	1	514427	492552	514427
+VerifyClass io.flutter.embedding.engine.systemchannels.BackGestureChannel	1	512552	512552	512552
+res/3yZ.webp	1	511666	494530	511666
+VerifyClass com.ovopark.lib_utils.NavigationBarHeightHelper	1	504427	504427	504427
+com.ovopark.widget.MarqueeTextView	1	498490	498490	498490
+AssetManager::OpenXmlAsset(res/RHk.xml)	10	491926	491926	49192.6
+res/KDW.webp	1	490677	473021	490677
+AssetManager::OpenXmlAsset(res/rYf.xml)	11	482344	482344	43849.454545454544
+res/NKN.png	1	476927	448125	476927
+AssetManager::OpenXmlAsset(res/layout/screen_simple_overlay_action_mode.xml)	9	476355	476355	52928.333333333336
+DartMessenger#handleMessageFromDart on flutter/platform	10	475157	475157	47515.7
+AssetManager::OpenXmlAsset(res/hqB.xml)	1	460781	460781	460781
+Fixup imt	1	459687	459687	459687
+WebViewChromiumAwInit.finishVariationsInitLocked	1	458907	458907	458907
+setupGraphicsSupport	1	457031	181303	457031
+res/wsQ.png	1	453177	420156	453177
+res/lqR.webp	1	447812	430468	447812
+ReadVMSnapshot	1	442864	313853	442864
+input	10	442862	442862	44286.2
+AssetManager::OpenXmlAsset(res/transition/move.xml)	4	434948	434948	108737
+VerifyClass com.ovopark.lib_utils.ScreenUtils$Companion	1	431094	431094	431094
+res/e9-.png	1	426614	390573	426614
+VerifyClass okhttp3.internal.platform.android.ConscryptSocketAdapter	1	424323	424323	424323
+res/61c.webp	1	419687	399427	419687
+res/gwG.png	1	413698	394427	413698
+res/QB8.webp	1	409479	387968	409479
+VerifyClass com.android.org.conscrypt.AbstractSessionContext	1	409063	409063	409063
+res/B8s.webp	1	409062	384844	409062
+res/fEb.png	1	408854	389322	408854
+res/P1T.webp	1	404687	390051	404687
+AwDataDirLock.lock	1	401146	401146	401146
+res/4Yj.png	1	399635	375312	399635
+res/drawable/progress_horizontal_material.xml	1	391979	241511	391979
+AwSafeBrowsingConfigHelper.getAppOptInPreference	1	388229	113958	388229
+hintActivityLaunch	2	381094	381094	190547
+Lock contention on allocation space lock (owner tid: 27923)	1	379948	379948	379948
+WebViewChromiumFactoryProvider.insideCreateWebViewContentsClientAdapter	2	374114	251354	187057
+res/bO_.xml	1	371875	167032	371875
+com.kedacom.ovopark.widgets.BottomSheetRecycleview	2	369114	369114	184557
+res/8eW.png	1	360468	345520	360468
+res/FFT.xml	1	359011	158803	359011
+res/TLh.webp	1	358906	342552	358906
+VerifyClass com.android.org.conscrypt.KeyManagerImpl	1	358438	358438	358438
+AssetManager::OpenXmlAsset(res/drawable/scrollbar_handle_material.xml)	1	356302	356302	356302
+res/6SR.png	1	353854	332709	353854
+AssetManager::OpenXmlAsset(res/x5k.xml)	4	352552	352552	88138
+VerifyClass com.android.org.conscrypt.OpenSSLContextImpl	1	345469	345469	345469
+res/r_W.webp	1	345209	324584	345209
+WindowAndroidWrapper.constructor	1	338125	338125	338125
+res/DYM.webp	1	336458	318125	336458
+res/KJ1.xml	1	331042	133334	331042
+VerifyClass okhttp3.internal.platform.android.BouncyCastleSocketAdapter	1	330312	330312	330312
+res/IlY.png	1	330208	301406	330208
+res/drawable/vector_drawable_progress_indeterminate_horizontal.xml	1	325417	83593	325417
+Lock contention on thread list lock (owner tid: 28043)	1	324167	324167	324167
+Lock contention on InternTable lock (owner tid: 27988)	16	322032	322032	20127
+RV OnBindView	11	320884	320884	29171.272727272728
+res/Elo.png	1	315625	298750	315625
+res/FYX.png	1	314480	295939	314480
+PlatformServiceBirdgeImpl.canUseGmsInternal	1	313750	155728	313750
+res/UsK.png	1	312291	290624	312291
+res/5eN.webp	1	312291	296927	312291
+res/xRV.png	1	312188	295209	312188
+AssetManager::GetResourceConfigurations	2	309532	309532	154766
+AssetManager::OpenXmlAsset(res/iQi.xml)	3	308593	308593	102864.33333333333
+res/jne.webp	1	307760	291301	307760
+res/rC8.webp	1	306146	280626	306146
+res/ZLP.png	1	304791	281770	304791
+AssetManager::OpenXmlAsset(res/transition/fade.xml)	4	302917	302917	75729.25
+res/0Qs.webp	1	300365	280990	300365
+res/color/hint_foreground_material_light.xml	3	300364	132916	100121.33333333333
+res/MoN.png	1	299687	283072	299687
+res/UbI.png	1	297031	255469	297031
+DartMessenger#send on dev.flutter.pigeon.FlutterRouterApi.sendEventToFlutter	5	295833	295833	59166.6
+res/Klx.png	1	295417	272553	295417
+Lock contention on runtime shutdown lock (owner tid: 27882)	1	289792	289792	289792
+EmojiCompatInitializer	1	289271	289271	289271
+res/color/text_color_secondary.xml	1	288958	64843	288958
+res/-wt.png	1	288854	271666	288854
+VerifyClass com.ovopark.ui.base.mvp.BaseMvpActivity	1	286511	286511	286511
+res/8Nr.png	1	284739	264791	284739
+res/zpv.xml	1	283333	183698	283333
+computePaletteForMiui	19	282556	282556	14871.368421052632
+monitor contention with owner pool-10-thread-1 (28039) at boolean android.os.BinderProxy.transactNative(int, android.os.Parcel, android.os.Parcel, int)(BinderProxy.java:-2) waiters=0 blocking from java.io.File android.app.ContextImpl.getFilesDir()(ContextImpl.java:687)	1	282448	282448	282448
+res/pny.png	1	281355	260886	281355
+res/E0S.webp	1	281094	262239	281094
+res/T1B.xml	1	279740	214584	279740
+com.ovopark.widget.NoScrollViewPager	1	279479	279479	279479
+res/VKl.png	1	279167	258542	279167
+res/8Yq.xml	1	279167	227397	279167
+VerifyClass com.kedacom.ovopark.widgets.BottomPendingGroupDialog$initDialog$1	1	277917	277917	277917
+res/-0m.png	1	274792	254636	274792
+AssetManager::OpenXmlAsset(res/DoI.xml)	1	272552	272552	272552
+res/Vmv.png	1	272239	256301	272239
+res/tEQ.webp	1	272187	255208	272187
+res/UJL.webp	1	269114	253281	269114
+res/WY8.png	1	268854	249688	268854
+Fixup fields	1	268750	268750	268750
+res/whs.xml	1	265365	161511	265365
+res/drawable/ic_ab_back_material.xml	1	264219	78907	264219
+res/8ew.png	1	263334	247136	263334
+res/bog.png	1	262761	246667	262761
+res/5v5.png	1	261614	244635	261614
+res/LC-.png	1	260052	242500	260052
+com.ovopark.widget.DragView	1	259010	259010	259010
+DartMessenger#handleMessageFromDart on flutter/navigation	2	258697	258697	129348.5
+AssetManager::OpenXmlAsset(res/7zS.xml)	2	255416	255416	127708
+DartExecutor#executeDartEntrypoint	1	254584	254584	254584
+AssetManager::OpenXmlAsset(res/25d.xml)	2	254479	254479	127239.5
+res/aBT.xml	1	254427	165677	254427
+res/21F.png	1	253333	235572	253333
+res/0lG.png	1	250260	232499	250260
+AssetManager::OpenXmlAsset(res/Vmg.xml)	3	249062	249062	83020.66666666667
+res/23o.png	1	248177	231145	248177
+res/J97.png	1	247969	230730	247969
+VerifyClass okhttp3.internal.platform.android.Android10SocketAdapter	1	247864	247864	247864
+Setup proxies	1	247604	119167	247604
+VerifyClass androidx.appcompat.app.AppCompatDialog	1	243750	243750	243750
+res/Hnp.xml	1	242604	141718	242604
+notifyContentCapture(START) for {com.kedacom.ovopark/com.kedacom.ovopark.ui.SplashActivity}	1	238125	238125	238125
+res/RMT.png	1	236198	217188	236198
+res/s2H.png	1	235625	218386	235625
+res/U_t.xml	1	234115	155157	234115
+initializeJavaContextClassLoader	1	230625	60364	230625
+res/oZw.png	1	230052	206198	230052
+VerifyClass com.android.org.conscrypt.ClientSessionContext	1	228646	228646	228646
+res/FPA.xml	1	224844	129896	224844
+AssetManager::OpenXmlAsset(res/color/text_color_secondary.xml)	1	224115	224115	224115
+res/xMf.xml	1	224114	135311	224114
+res/guv.png	1	222500	204062	222500
+res/-oe.xml	1	220885	131145	220885
+res/y1j.xml	1	220781	128854	220781
+VerifyClass com.android.org.conscrypt.OpenSSLSocketFactoryImpl	1	219740	219740	219740
+res/nez.png	1	218646	201823	218646
+res/drawable/dialog_background_material.xml	1	217761	139793	217761
+EmojiCompat.EmojiCompatInitializer.run	1	216354	216354	216354
+res/Qn5.xml	1	215365	168647	215365
+res/90U.xml	1	214323	124062	214323
+res/sQT.xml	1	213177	170312	213177
+res/d5V.xml	1	213073	121876	213073
+res/ZDB.png	1	210625	182552	210625
+res/drawable-xhdpi-v4/editbox_dropdown_background_dark.9.png	1	205573	161458	205573
+AssetManager::OpenXmlAsset(res/bO_.xml)	1	204843	204843	204843
+res/0v_.xml	1	204583	122604	204583
+res/color/text_color_primary.xml	2	204271	109115	102135.5
+res/3c6.xml	1	202343	109895	202343
+Run checkpoint function	15	201407	199428	13427.133333333333
+AssetManager::OpenXmlAsset(res/FFT.xml)	1	200208	200208	200208
+res/Gs2.xml	1	198854	137083	198854
+res/Hr7.png	1	198125	182605	198125
+res/2xc.xml	1	197969	108542	197969
+res/esV.xml	1	197864	145572	197864
+AssetManager::OpenXmlAsset(res/KJ1.xml)	1	197708	197708	197708
+FlutterEngineConnectionRegistry#add FlutterBoostPlugin	1	196198	196198	196198
+AssetManager::OpenXmlAsset(res/Noi.xml)	1	196146	196146	196146
+res/dz9.xml	1	195156	117969	195156
+AssetManager::OpenNonAssetFd(assets/stored-locales/zh-CN.pak)	4	188177	188177	47044.25
+AssetManager::OpenXmlAsset(res/9qS.xml)	1	186146	186146	186146
+res/N1z.xml	1	184531	108541	184531
+res/pM-1.xml	1	184167	139636	184167
+VerifyClass com.android.org.conscrypt.KeyManagerFactoryImpl	1	179584	179584	179584
+AutofillProviderImpl.constructor	2	179010	179010	89505
+Open dex file /system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	178386	5157	178386
+Lock contention on runtime shutdown lock (owner tid: 27991)	1	178125	178125	178125
+AssetManager::OpenXmlAsset(res/Bpp.xml)	1	175937	175937	175937
+res/LUV.xml	1	175416	132447	175416
+res/9mQ.xml	1	173750	105520	173750
+Dex file open Zip /system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	173229	90417	173229
+res/xzV.xml	1	173177	92865	173177
+res/Wc9.xml	1	170365	123230	170365
+AssetManager::OpenXmlAsset(res/color/hint_foreground_material_light.xml)	3	167448	167448	55816
+VerifyClass com.android.org.conscrypt.TrustedCertificateStore$PreloadHolder	1	167188	167188	167188
+AssetManager::OpenXmlAsset(res/Q2h.xml)	1	166042	166042	166042
+providerRemove	1	165938	165938	165938
+Lock contention on runtime shutdown lock (owner tid: 28229)	1	165521	165521	165521
+res/Q0Q.xml	1	164427	112083	164427
+AssetManager::OpenXmlAsset(res/doP.xml)	1	164427	164427	164427
+res/gD5.xml	1	162917	122136	162917
+AssetManager::OpenXmlAsset(res/GGY.xml)	2	162917	162917	81458.5
+FlutterEngineConnectionRegistry#add PathProviderPlugin	1	161979	161979	161979
+androidx.appcompat.widget.LinearLayoutCompat	1	161510	161510	161510
+AssetManager::OpenXmlAsset(res/4Na.xml)	1	161355	161355	161355
+AssetManager::OpenXmlAsset(res/cct.xml)	1	161198	161198	161198
+res/BaF.xml	1	160104	119843	160104
+res/xhQ.xml	1	159010	110781	159010
+AssetManager::OpenXmlAsset(res/gmV.xml)	1	157187	157187	157187
+AssetManager::OpenXmlAsset(res/CAy.xml)	1	156458	156458	156458
+res/s1A.xml	1	150469	98021	150469
+res/-yG.xml	1	150469	96823	150469
+LoadApkAssets(/data/resource-cache/vendor@overlay@GestureLineOverlay.apk@idmap)	1	148073	123125	148073
+chooseDriver	1	143229	65521	143229
+AssetManager::OpenXmlAsset(res/c6G.xml)	1	141406	141406	141406
+AssetManager::OpenXmlAsset(res/01S.xml)	1	139792	139792	139792
+res/H3j.xml	1	137031	86302	137031
+topResumedActivityChangeItem	3	136874	136874	45624.666666666664
+AssetManager::OpenXmlAsset(res/T8W.xml)	1	136719	136719	136719
+AssetManager::OpenXmlAsset(res/Y7N.xml)	1	136094	136094	136094
+NetworkSecurityConfigProvider.install	1	135052	135052	135052
+AssetManager::OpenXmlAsset(res/oX8.xml)	1	134375	134375	134375
+Lock contention on ClassLinker classes lock (owner tid: 27994)	1	133803	133803	133803
+com.youth.banner.view.BannerViewPager	1	130782	130782	130782
+AssetManager::OpenXmlAsset(res/P53.xml)	1	128750	128750	128750
+res/0vH.xml	1	127760	80833	127760
+AssetManager::OpenXmlAsset(res/khq.xml)	2	126562	126562	63281
+AssetManager::OpenAsset(com.kedacom.ovopark.properties)	1	125104	125104	125104
+AssetManager::OpenXmlAsset(res/vGb.xml)	2	124375	124375	62187.5
+RegisterDexFile /system/product/app/WebViewGoogle/WebViewGoogle.apk	1	124323	124323	124323
+AssetManager::OpenXmlAsset(res/P79.xml)	1	124011	124011	124011
+com.ovopark.widget.CommonDragView	1	124010	124010	124010
+AssetManager::OpenXmlAsset(res/MsJ.xml)	1	123958	123958	123958
+AssetManager::OpenXmlAsset(res/JOj.xml)	1	120782	120782	120782
+AssetManager::OpenXmlAsset(res/interpolator/fast_out_slow_in.xml)	1	119896	119896	119896
+FlutterEngineConnectionRegistry#add VideoPlayerPlugin	1	117500	117500	117500
+AssetManager::OpenXmlAsset(res/Lth.xml)	1	117500	117500	117500
+androidx.appcompat.widget.FitWindowsFrameLayout	1	117395	117395	117395
+Lock contention on ClassLinker classes lock (owner tid: 28099)	1	116667	116667	116667
+res/dgy.xml	1	113698	68802	113698
+VerifyClass com.ovopark.widget.dialog.CommonBottomSheetDialog	1	112917	112917	112917
+AssetManager::OpenXmlAsset(res/zSR.xml)	1	112344	112344	112344
+AssetManager::OpenNonAsset(res/CQt.png)	1	112344	112344	112344
+AssetManager::OpenXmlAsset(res/CZY.xml)	1	111927	111927	111927
+VerifyClass okhttp3.internal.platform.android.ConscryptSocketAdapter$Companion$factory$1	1	111354	111354	111354
+AssetManager::OpenNonAssetFd(assets/snapshot_blob_32.bin)	1	111093	111093	111093
+AssetManager::OpenXmlAsset(res/sw-.xml)	1	110833	110833	110833
+AssetManager::OpenXmlAsset(res/8GD.xml)	1	110677	110677	110677
+FlutterEngineConnectionRegistry#add DeviceInfoPlusPlugin	1	110625	110625	110625
+Fixup intern table	1	109531	109531	109531
+AssetManager::OpenXmlAsset(res/s4i.xml)	1	109427	109427	109427
+AssetManager::OpenXmlAsset(res/v3Z.xml)	1	109167	109167	109167
+AssetManager::OpenXmlAsset(res/1I8.xml)	1	108125	108125	108125
+VerifyClass okhttp3.internal.platform.android.BouncyCastleSocketAdapter$Companion$factory$1	1	107812	107812	107812
+res/color/secondary_text_material_dark.xml	1	107761	59948	107761
+AssetManager::OpenXmlAsset(res/fbk.xml)	1	107500	107500	107500
+DartMessenger#send on dev.flutter.pigeon.FlutterRouterApi.onForeground	1	107135	107135	107135
+res/cWL.xml	1	104844	62083	104844
+AssetManager::OpenXmlAsset(res/744.xml)	1	104844	104844	104844
+AssetManager::OpenXmlAsset(res/whs.xml)	1	103854	103854	103854
+AssetManager::OpenXmlAsset(res/yl6.xml)	1	103802	103802	103802
+Lock contention on InternTable lock (owner tid: 28058)	6	103492	103492	17248.666666666668
+AssetManager::OpenXmlAsset(res/LxH.xml)	1	102344	102344	102344
+AssetManager::OpenXmlAsset(res/8L71.xml)	1	101667	101667	101667
+AssetManager::OpenNonAssetFd(assets/chrome_100_percent.pak)	1	101302	101302	101302
+AssetManager::OpenXmlAsset(res/Hnp.xml)	1	100886	100886	100886
+AssetManager::OpenXmlAsset(res/zpv.xml)	1	99635	99635	99635
+DartMessenger#send on flutter/navigation	1	99271	99271	99271
+AssetManager::OpenXmlAsset(res/dx-.xml)	2	99166	99166	49583
+AssetManager::OpenXmlAsset(res/Zzu.xml)	1	99063	99063	99063
+Fixup conflict tables	1	98594	98594	98594
+AssetManager::OpenXmlAsset(res/K8n.xml)	1	98489	98489	98489
+AssetManager::OpenXmlAsset(res/M_B.xml)	1	98021	98021	98021
+AssetManager::OpenXmlAsset(res/FUD.xml)	2	97865	97865	48932.5
+AssetManager::OpenXmlAsset(res/7ks.xml)	1	96302	96302	96302
+AssetManager::OpenAsset(device_features/equuleus.xml)	1	95885	95885	95885
+AssetManager::OpenXmlAsset(res/color/text_color_primary.xml)	2	95156	95156	47578
+res/color/hint_foreground_material_dark.xml	1	95000	45104	95000
+AssetManager::OpenXmlAsset(res/FPA.xml)	1	94948	94948	94948
+AssetManager::OpenXmlAsset(res/3R41.xml)	1	94322	94322	94322
+AssetManager::OpenXmlAsset(res/Apf.xml)	1	94062	94062	94062
+AssetManager::OpenXmlAsset(res/atE.xml)	1	93750	93750	93750
+Lock contention on thread list lock (owner tid: 28144)	1	93437	93437	93437
+AssetManager::OpenXmlAsset(res/0yj.xml)	1	92552	92552	92552
+AssetManager::OpenXmlAsset(res/3c6.xml)	1	92448	92448	92448
+AssetManager::OpenXmlAsset(res/y1j.xml)	1	91927	91927	91927
+AssetManager::OpenXmlAsset(res/d5V.xml)	1	91197	91197	91197
+AssetManager::OpenXmlAsset(res/erg.xml)	1	91146	91146	91146
+AssetManager::OpenXmlAsset(res/0aE.xml)	1	90729	90729	90729
+AssetManager::OpenXmlAsset(res/90U.xml)	1	90261	90261	90261
+AssetManager::OpenXmlAsset(res/Spn.xml)	1	90157	90157	90157
+LoadApkAssets(/vendor/overlay/GestureLineOverlay.apk)	1	90052	73020	90052
+AssetManager::OpenXmlAsset(res/-oe.xml)	1	89740	89740	89740
+AssetManager::OpenXmlAsset(res/2xc.xml)	1	89427	89427	89427
+AssetManager::OpenXmlAsset(res/xMf.xml)	1	88803	88803	88803
+AssetManager::OpenXmlAsset(res/aBT.xml)	1	88750	88750	88750
+AssetManager::OpenXmlAsset(res/AHl.xml)	1	87708	87708	87708
+AwContentsClient.constructorOneArg	2	86927	86927	43463.5
+AssetManager::OpenXmlAsset(res/Vss.xml)	1	84375	84375	84375
+AssetManager::OpenXmlAsset(res/oCR.xml)	1	84219	84219	84219
+AssetManager::OpenXmlAsset(res/yof.xml)	1	83802	83802	83802
+Dex file open from Zip /system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	82812	11771	82812
+AssetManager::OpenXmlAsset(res/0v_.xml)	1	81979	81979	81979
+PlatformServiceBirdgeImpl.enableUsingApk	1	80729	80729	80729
+AssetManager::OpenXmlAsset(res/RTx.xml)	1	80573	80573	80573
+AssetManager::OpenXmlAsset(res/xzV.xml)	1	80312	80312	80312
+res/color/white_disabled_material.xml	1	79687	35885	79687
+ReadFill	1	79323	79323	79323
+AssetManager::OpenXmlAsset(res/U_t.xml)	1	78958	78958	78958
+VerifyClass com.android.org.conscrypt.ServerSessionContext	1	78906	78906	78906
+AssetManager::OpenXmlAsset(res/drawable/dialog_background_material.xml)	1	77968	77968	77968
+AssetManager::OpenXmlAsset(res/dz9.xml)	1	77187	77187	77187
+AssetManager::OpenXmlAsset(res/N1z.xml)	1	75990	75990	75990
+Lock contention on runtime shutdown lock (owner tid: 28207)	1	75625	75625	75625
+AssetManager::OpenXmlAsset(res/vz-.xml)	1	74010	74010	74010
+AssetManager::OpenXmlAsset(res/drawable/progress_horizontal_material.xml)	1	70781	70781	70781
+FlutterEngineConnectionRegistry#add UrlLauncherPlugin	1	69635	69635	69635
+AssetManager::OpenXmlAsset(res/9mQ.xml)	1	68230	68230	68230
+Dex file open from Zip Archive /system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	67916	67916	67916
+AssetManager::OpenXmlAsset(res/ob3.xml)	1	67448	67448	67448
+AssetManager::OpenNonAsset(res/pE2.png)	1	66771	66771	66771
+AssetManager::OpenXmlAsset(res/T1B.xml)	1	65156	65156	65156
+AssetManager::OpenXmlAsset(res/drawable/ic_ab_back_material.xml)	1	63854	63854	63854
+AssetManager::OpenXmlAsset(res/anim/button_state_list_anim_material.xml)	1	62709	62709	62709
+SupportLibWebViewContentsClientAdapter.setWebViewClient	1	61823	61823	61823
+AssetManager::OpenXmlAsset(res/Gs2.xml)	1	61771	61771	61771
+Lock contention on Region lock (owner tid: 27881)	4	60521	60521	15130.25
+AssetManager::IsDarkModeSupported	1	59896	59896	59896
+FinalizeVMIsolate	1	58542	58542	58542
+AssetManager::OpenNonAsset(res/Jxz.webp)	1	58333	58333	58333
+eglGetDisplay	2	57396	36665	28698
+AssetManager::OpenNonAsset(res/Ko1.png)	2	55521	55521	27760.5
+AssetManager::OpenXmlAsset(res/drawable/vector_drawable_progress_indeterminate_horizontal.xml)	1	55157	55157	55157
+WebViewChromiumFactoryProvider.createAwInit	1	53958	53958	53958
+DartMessenger#handleMessageFromDart on flutter/keyboard	1	53855	53855	53855
+AssetManager::OpenXmlAsset(res/-yG.xml)	1	53646	53646	53646
+AssetManager::OpenXmlAsset(res/anim/progress_indeterminate_horizontal_rect2.xml)	1	53645	53645	53645
+AssetManager::OpenXmlAsset(res/fcA.xml)	1	53177	53177	53177
+DartMessenger#send on flutter/localization	1	52865	52865	52865
+AssetManager::OpenXmlAsset(res/s1A.xml)	1	52448	52448	52448
+AssetManager::OpenXmlAsset(res/Q0Q.xml)	1	52344	52344	52344
+AssetManager::OpenXmlAsset(res/esV.xml)	1	52292	52292	52292
+AssetManager::OpenXmlAsset(res/8Yq.xml)	1	51770	51770	51770
+AssetManager::OpenXmlAsset(res/H3j.xml)	1	50729	50729	50729
+Lock contention on thread list lock (owner tid: 28066)	1	49896	49896	49896
+AssetManager::OpenXmlAsset(res/color/hint_foreground_material_dark.xml)	1	49896	49896	49896
+AssetManager::OpenNonAsset(res/xpl.png)	1	49791	49791	49791
+AssetManager::OpenXmlAsset(res/xhQ.xml)	1	48229	48229	48229
+AssetManager::OpenXmlAsset(res/MpT.xml)	1	48073	48073	48073
+AssetManager::OpenXmlAsset(res/color/secondary_text_material_dark.xml)	1	47813	47813	47813
+AssetManager::OpenXmlAsset(res/Wc9.xml)	1	47135	47135	47135
+AssetManager::OpenXmlAsset(res/0vH.xml)	1	46927	46927	46927
+AssetManager::OpenXmlAsset(res/Qn5.xml)	1	46718	46718	46718
+AssetManager::OpenNonAssetFd(assets/icudtl.dat)	1	45833	45833	45833
+AssetManager::OpenXmlAsset(res/dgy.xml)	1	44896	44896	44896
+AssetManager::OpenXmlAsset(res/pM-1.xml)	1	44531	44531	44531
+AssetManager::OpenXmlAsset(res/color/white_disabled_material.xml)	1	43802	43802	43802
+AssetManager::OpenXmlAsset(res/LUV.xml)	1	42969	42969	42969
+AssetManager::OpenXmlAsset(res/sQT.xml)	1	42865	42865	42865
+AssetManager::OpenXmlAsset(res/cWL.xml)	1	42761	42761	42761
+setCoreSettings	1	41979	41979	41979
+AssetManager::OpenXmlAsset(res/interpolator/progress_indeterminate_horizontal_rect1_translatex.xml)	1	41979	41979	41979
+AssetManager::OpenXmlAsset(res/anim/progress_indeterminate_horizontal_rect1.xml)	1	41562	41562	41562
+AssetManager::OpenNonAsset(res/UbI.png)	1	41562	41562	41562
+AssetManager::OpenXmlAsset(res/Ntz.xml)	1	41354	41354	41354
+AssetManager::OpenXmlAsset(res/drawable/progress_indeterminate_horizontal_material.xml)	1	41302	41302	41302
+AssetManager::OpenXmlAsset(res/gD5.xml)	1	40781	40781	40781
+AssetManager::OpenNonAsset(res/D9e.png)	2	40781	40781	20390.5
+AssetManager::OpenXmlAsset(res/interpolator/progress_indeterminate_horizontal_rect2_translatex.xml)	1	40417	40417	40417
+AssetManager::OpenXmlAsset(res/BaF.xml)	1	40261	40261	40261
+VerifyClass com.android.org.conscrypt.AbstractSessionContext$1	1	40000	40000	40000
+AssetManager::OpenNonAssetFd(assets/snapshot_blob_64.bin)	1	39583	39583	39583
+ReadAlloc	1	39167	39167	39167
+AssetManager::OpenXmlAsset(res/interpolator/progress_indeterminate_horizontal_rect2_scalex.xml)	1	38958	38958	38958
+FlutterEngineConnectionRegistry#add SqflitePlugin	1	37656	37656	37656
+AssetManager::OpenNonAssetFd(assets/resources.pak)	1	37396	37396	37396
+AssetManager::OpenXmlAsset(res/interpolator/progress_indeterminate_horizontal_rect1_scalex.xml)	1	36407	36407	36407
+AssetManager::OpenNonAsset(res/e9-.png)	1	36041	36041	36041
+WebViewContentsClientAdapter.constructor	2	35833	35833	17916.5
+AssetManager::OpenNonAsset(res/drawable-xhdpi-v4/editbox_dropdown_background_dark.9.png)	1	35521	35521	35521
+AssetManager::OpenNonAsset(res/0m1.webp)	1	35469	35469	35469
+AssetManager::OpenNonAsset(res/DLk.png)	1	34375	34375	34375
+FlutterEngineConnectionRegistry#add PackageInfoPlugin	1	33854	33854	33854
+AssetManager::OpenNonAsset(res/wsQ.png)	1	33021	33021	33021
+Lock contention on thread list lock (owner tid: 28143)	1	32916	32916	32916
+setupGpuLayers	1	32448	32448	32448
+OpenImageFile	3	32397	32397	10799
+AssetManager::OpenNonAsset(res/FUX.webp)	1	31145	31145	31145
+AssetManager::OpenNonAsset(res/ytK.png)	1	30417	30417	30417
+activityShowWindow	1	30260	30260	30260
+setLayerPaths	4	30209	30209	7552.25
+Lock contention on ClassLinker classes lock (owner tid: 18446744073709551615)	8	30205	30205	3775.625
+VerifyClass com.android.org.conscrypt.EmptyArray	1	29792	29792	29792
+AssetManager::OpenNonAsset(res/NKN.png)	1	28802	28802	28802
+AssetManager::OpenNonAsset(res/IlY.png)	1	28802	28802	28802
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes4.dex	1	28438	28438	28438
+AssetManager::OpenNonAsset(res/ZDB.png)	1	28073	28073	28073
+AssetManager::OpenNonAsset(res/xsl.png)	1	28021	28021	28021
+AssetManager::OpenNonAsset(res/CEm.webp)	1	27917	27917	27917
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk	1	27865	27865	27865
+AssetManager::OpenNonAsset(res/4Hf.png)	1	26041	26041	26041
+AssetManager::OpenNonAsset(res/rC8.webp)	1	25520	25520	25520
+Lock contention on thread suspend count lock (owner tid: 27896)	1	25365	25365	25365
+AssetManager::OpenNonAsset(res/bYM.png)	1	25208	25208	25208
+notifyContentCapture(START) for {com.kedacom.ovopark/com.kedacom.ovopark.ui.HomeOldActivity}	1	25157	25157	25157
+ResourcesManager#updateResourcesForActivity	2	25001	25001	12500.5
+AssetManager::OpenNonAsset(res/4Yj.png)	1	24323	24323	24323
+AssetManager::OpenNonAsset(res/B8s.webp)	1	24218	24218	24218
+AssetManager::OpenNonAsset(res/QmO.webp)	1	24063	24063	24063
+AssetManager::OpenNonAsset(res/qZX.png)	1	23907	23907	23907
+AssetManager::OpenNonAsset(res/oZw.png)	1	23854	23854	23854
+DartMessenger#handleMessageFromDart on flutter/isolate	1	23750	23750	23750
+AssetManager::OpenNonAsset(res/5G0.png)	1	23750	23750	23750
+AssetManager::OpenNonAsset(res/nX9.png)	1	23334	23334	23334
+Lock contention on GC barrier lock (owner tid: 27881)	1	23229	23229	23229
+notifyContentCapture(PAUSE) for {com.kedacom.ovopark/com.kedacom.ovopark.ui.SplashActivity}	1	23021	23021	23021
+AssetManager::OpenNonAsset(res/ZLP.png)	1	23021	23021	23021
+AssetManager::OpenNonAsset(res/AwD.png)	1	23021	23021	23021
+AssetManager::OpenNonAsset(res/Klx.png)	1	22864	22864	22864
+AssetManager::OpenNonAsset(res/pOh.png)	1	22292	22292	22292
+AssetManager::OpenNonAsset(res/BBM.png)	1	21979	21979	21979
+AssetManager::OpenNonAsset(res/tYI.png)	1	21875	21875	21875
+open	5	21823	21823	4364.6
+AssetManager::OpenNonAsset(res/UsK.png)	1	21667	21667	21667
+AssetManager::OpenNonAsset(res/QB8.webp)	1	21511	21511	21511
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes27.dex	1	21250	21250	21250
+AssetManager::OpenNonAsset(res/6SR.png)	1	21145	21145	21145
+AssetManager::OpenNonAsset(res/r_W.webp)	1	20625	20625	20625
+AssetManager::OpenNonAsset(res/VKl.png)	1	20625	20625	20625
+AssetManager::OpenNonAsset(res/pny.png)	1	20469	20469	20469
+AssetManager::OpenNonAsset(res/61c.webp)	1	20260	20260	20260
+AssetManager::OpenNonAsset(res/-0m.png)	1	20156	20156	20156
+AssetManager::OpenNonAsset(res/8Nr.png)	1	19948	19948	19948
+AssetManager::OpenNonAsset(res/dcE.png)	1	19740	19740	19740
+AssetManager::OpenNonAsset(res/fEb.png)	1	19532	19532	19532
+AssetManager::OpenNonAsset(res/CSv.png)	1	19480	19480	19480
+AssetManager::OpenNonAsset(res/0Qs.webp)	1	19375	19375	19375
+AssetManager::OpenNonAsset(res/gwG.png)	1	19271	19271	19271
+AssetManager::OpenNonAsset(res/C3H.png)	1	19271	19271	19271
+AssetManager::OpenNonAsset(res/WY8.png)	1	19166	19166	19166
+AssetManager::OpenNonAsset(res/MrX.png)	1	19115	19115	19115
+AssetManager::OpenNonAsset(res/RMT.png)	1	19010	19010	19010
+AssetManager::OpenNonAsset(res/E0S.webp)	1	18855	18855	18855
+AssetManager::OpenNonAsset(res/dAl.webp)	1	18802	18802	18802
+AssetManager::OpenNonAsset(res/cnc.png)	1	18698	18698	18698
+AssetManager::OpenNonAsset(res/B0Y.png)	1	18593	18593	18593
+AssetManager::OpenNonAsset(res/FYX.png)	1	18541	18541	18541
+AssetManager::OpenNonAsset(res/guv.png)	1	18438	18438	18438
+AssetManager::OpenNonAsset(res/DYM.webp)	1	18333	18333	18333
+AssetManager::OpenNonAsset(res/8AC.webp)	1	17917	17917	17917
+AssetManager::OpenNonAsset(res/21F.png)	1	17761	17761	17761
+AssetManager::OpenNonAsset(res/0lG.png)	1	17761	17761	17761
+AssetManager::OpenNonAsset(res/KDW.webp)	1	17656	17656	17656
+AssetManager::OpenNonAsset(res/LC-.png)	1	17552	17552	17552
+AssetManager::OpenNonAsset(res/lqR.webp)	1	17344	17344	17344
+AssetManager::OpenNonAsset(res/s2H.png)	1	17239	17239	17239
+AssetManager::OpenNonAsset(res/J97.png)	1	17239	17239	17239
+AssetManager::OpenNonAsset(res/-wt.png)	1	17188	17188	17188
+AssetManager::OpenNonAsset(res/3yZ.webp)	1	17136	17136	17136
+AssetManager::OpenNonAsset(res/23o.png)	1	17032	17032	17032
+AssetManager::OpenNonAsset(res/xRV.png)	1	16979	16979	16979
+AssetManager::OpenNonAsset(res/tEQ.webp)	1	16979	16979	16979
+AssetManager::OpenNonAsset(res/5v5.png)	1	16979	16979	16979
+AssetManager::OpenNonAsset(res/QFX.png)	1	16927	16927	16927
+AssetManager::OpenNonAsset(res/Elo.png)	1	16875	16875	16875
+AssetManager::OpenNonAsset(res/nez.png)	1	16823	16823	16823
+AssetManager::OpenNonAsset(res/MoN.png)	1	16615	16615	16615
+AssetManager::OpenNonAsset(res/Sgf.9.png)	1	16562	16562	16562
+AssetManager::OpenNonAsset(res/jne.webp)	1	16459	16459	16459
+Suspending mutator threads	1	16354	16354	16354
+AssetManager::OpenNonAsset(res/TLh.webp)	1	16354	16354	16354
+AssetManager::OpenNonAsset(res/8ew.png)	1	16198	16198	16198
+AssetManager::OpenNonAsset(res/bog.png)	1	16094	16094	16094
+AssetManager::OpenNonAsset(res/Vmv.png)	1	15938	15938	15938
+AssetManager::OpenNonAsset(res/x0m.webp)	1	15833	15833	15833
+AssetManager::OpenNonAsset(res/UJL.webp)	1	15833	15833	15833
+AssetManager::OpenNonAsset(res/Qv4.webp)	1	15730	15730	15730
+AssetManager::OpenNonAsset(res/Hr7.png)	1	15520	15520	15520
+AssetManager::OpenNonAsset(res/5eN.webp)	1	15364	15364	15364
+AssetManager::OpenNonAsset(res/8eW.png)	1	14948	14948	14948
+AwSafeBrowsingConfigHelper.isDisabledByCommandLine	1	14740	14740	14740
+AssetManager::OpenNonAsset(res/P1T.webp)	1	14636	14636	14636
+scheduleFrameLocked-mMotionEventType:-1 mTouchMoveNum:-1 mConsumedDown:false mConsumedMove:false	4	14482	14482	3620.5
+CreateImageBitmap	1	14219	14219	14219
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes16.dex	1	13698	13698	13698
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes35.dex	1	12865	12865	12865
+notifyContentCapture(RESUME) for {com.kedacom.ovopark/com.kedacom.ovopark.ui.HomeOldActivity}	1	12761	12761	12761
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes2.dex	1	11822	11822	11822
+setupAngle	1	11666	11666	11666
+Open dex file from RAM /system/product/app/WebViewGoogle/WebViewGoogle.apk	1	11563	11563	11563
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes36.dex	1	11459	11459	11459
+FlutterEngineConnectionRegistry#add ProcessTextPlugin	1	11094	11094	11094
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes3.dex	1	10885	10885	10885
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes13.dex	1	10677	10677	10677
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes8.dex	1	10573	10573	10573
+PostLoad	1	10521	10521	10521
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes5.dex	1	10052	10052	10052
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes34.dex	1	10000	10000	10000
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes11.dex	1	10000	10000	10000
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes7.dex	1	9636	9636	9636
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes6.dex	1	9584	9584	9584
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes23.dex	1	9584	9584	9584
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes17.dex	1	9584	9584	9584
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes12.dex	1	9532	9532	9532
+notifyContentCapture(RESUME) for {com.kedacom.ovopark/com.kedacom.ovopark.ui.SplashActivity}	1	9531	9531	9531
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes44.dex	1	9531	9531	9531
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes39.dex	1	9427	9427	9427
+getPlatformDisplay	2	9324	9324	4662
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes28.dex	1	9323	9323	9323
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes24.dex	1	9323	9323	9323
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes18.dex	1	9271	9271	9271
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes14.dex	1	9219	9219	9219
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes46.dex	1	9167	9167	9167
+TTFD_HomeWorkDesk	1	9114	9114	9114
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes10.dex	1	9114	9114	9114
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes47.dex	1	9063	9063	9063
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes33.dex	1	9011	9011	9011
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes21.dex	1	9011	9011	9011
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes29.dex	1	8959	8959	8959
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes26.dex	1	8959	8959	8959
+VerifyClass com.android.org.conscrypt.OpenSSLContextImpl$TLSv13	1	8958	8958	8958
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes15.dex	1	8958	8958	8958
+Open oat file /data/dalvik-cache/arm64/system@framework@org.apache.http.legacy.jar@classes.dex	1	8906	8906	8906
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes9.dex	1	8906	8906	8906
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes22.dex	1	8854	8854	8854
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes31.dex	1	8750	8750	8750
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes43.dex	1	8698	8698	8698
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes41.dex	1	8698	8698	8698
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes38.dex	1	8698	8698	8698
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes20.dex	1	8698	8698	8698
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes48.dex	1	8541	8541	8541
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes32.dex	1	8385	8385	8385
+Mutator threads suspended for Add image space	1	8229	8229	8229
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes42.dex	1	8073	8073	8073
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes40.dex	1	8073	8073	8073
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes37.dex	1	8021	8021	8021
+Load	1	7916	7916	7916
+Lock contention on ClassLinker classes lock (owner tid: 0)	2	7761	7761	3880.5
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes30.dex	1	7709	7709	7709
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes25.dex	1	7708	7708	7708
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes45.dex	1	7344	7344	7344
+Open oat file /data/dalvik-cache/arm64/data@app@com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==@base.apk@classes.dex	1	7292	7292	7292
+Open dex file from RAM /data/app/com.kedacom.ovopark-s9DXrqnyDWaBmsU90-ENtg==/base.apk!classes19.dex	1	7031	7031	7031
+Lock contention on ClassLinker classes lock (owner tid: 28102)	2	6980	6980	3490
+Open oat file /system/framework/oat/arm64/org.apache.http.legacy.odex	1	6198	6198	6198
+Lock contention on InternTable lock (owner tid: 27934)	3	5937	5937	1979
+WebViewChromiumAwInit.waitUntilSetUpResources	1	5104	5104	5104
+SuspendThreadByThreadId suspended pool-10-thread-1 id=47	1	4844	4844	4844
+WebViewChromiumFactoryProvider.getLoadedPackageInfo	1	4479	4479	4479
+SuspendThreadByThreadId suspended Binder:interceptor id=28	1	4271	4271	4271
+Lock contention on InternTable lock (owner tid: 27898)	1	4271	4271	4271
+ReadImageHeader	1	4270	4270	4270
+Lock contention on ClassLinker classes lock (owner tid: 28105)	1	4219	4219	4219
+Lock contention on ClassLinker classes lock (owner tid: 27934)	1	4062	4062	4062
+Lock contention on Region lock (owner tid: 0)	1	4010	4010	4010
+Dex file open from Zip Archive /system/framework/org.apache.http.legacy.jar!classes2.dex	1	3907	3907	3907
+Resuming mutator threads	1	3802	3802	3802
+Lock contention on a monitor lock (owner tid: 28150)	1	3698	3698	3698
+WebViewChromiumFactoryProvider.checkStorage	1	3646	3646	3646
+Lock contention on InternTable lock (owner tid: 28039)	1	3645	3645	3645
+Lock contention on InternTable lock (owner tid: 27903)	1	3490	3490	3490
+Lock contention on ClassLinker classes lock (owner tid: 27886)	1	3229	3229	3229
+Dex file open from Zip Archive /system/product/app/TrichromeLibrary/TrichromeLibrary.apk!classes2.dex	1	3125	3125	3125
+Lock contention on InternTable lock (owner tid: 27994)	1	3073	3073	3073
+setConsumerName	2	3020	3020	1510
+Open dex file from RAM /system/product/app/TrichromeLibrary/TrichromeLibrary.apk	1	2448	2448	2448
+setGpuStats	1	2396	2396	2396
+connect	1	2188	2188	2188
+Lock contention on GC barrier lock (owner tid: 0)	1	1979	1979	1979
+setDefaultBufferSize	1	1875	1875	1875
+Lock contention on ClassLinker classes lock (owner tid: 27926)	1	1823	1823	1823
+setConsumerIsProtected	1	1354	1354	1354
+setConsumerUsageBits	1	1198	1198	1198
+binder transaction async	21	0	0	0
