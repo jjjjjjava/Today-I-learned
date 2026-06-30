@@ -48,4 +48,5 @@
 | 02.md | 模块二全部（Perfetto+marker 分工、category↔流程、profileable；SQL 算 TTFD；Wall/Self/Count 组合判断）+ 🔧 doFrame Wall 高 Self 低=容器型外层；含 01 思考题复盘 | 2026-06-26 |
 | 03.md | 模块三全部（🔧 inflate 三阶段反射 newView；🔧 RelativeLayout 双重测量+measure 递归；🔧 WebView gone 仍创建+Chromium；🔧 binder 579 次溯源[纠正"渲染走 binder"误解]）+ 项目归因三类矛盾；含 02 思考题复盘。**补丁：拆清 RV(RecyclerView)≠RelativeLayout** | 2026-06-26 |
 | 04.md | 模块四全部（首屏裁剪 P0/P1/P2 优先级；🔧 Application 排 P2 的串行机制+异步天花板；P0 前后复测数据；门店页分阶段缓存、"我的"页状态快照+replay 两回归取舍）；含 03 思考题复盘（纠 RV/RelativeLayout、反射 vs 手写） | 2026-06-26 |
-| 05.md | 模块五全部（面试 2 分钟主线 + 高频追问表[含白屏诊断、RV≠RelativeLayout]；🔧 附录·启动全流程 5 阶段机制全景）；含 04 思考题复盘（382 binder ROI、异步天花板、白屏时序诊断）+ 纠正优化率 33%→约 36%。**全模块已勾，待评估篇** | 2026-06-26 |
+| 05.md | 模块五全部（面试 2 分钟主线 + 高频追问表[含白屏诊断、RV≠RelativeLayout]；🔧 附录·启动全流程 5 阶段机制全景）；含 04 思考题复盘（382 binder ROI、异步天花板、白屏时序诊断）+ 纠正优化率 33%→约 36%。 | 2026-06-26 |
+| 06.md | **评估篇**（`<!-- eval-article -->`）：全课终检清单（5 块带标准答案，逐条自测）。读毕「我读完了」→ 自动生成 summary.md | 2026-06-27 |

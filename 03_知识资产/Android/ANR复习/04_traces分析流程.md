@@ -189,6 +189,44 @@ RUNNABLE + 堆栈平平 + 系统 CPU 爆满 → C 类 CPU 饥饿→ 限并发、
 WAITING + MessageQueue + CPU 正常   → 当前 trace 可能无效 → 结合 logcat/reason/聚合再查
 ```
 
+### 附 · 真实案例速览（按类对号入座）
+
+> 项目里真实修过的 ANR，都是按上面"环境 → 主线程状态 → 追堆栈/锁链"套路定位后归类。保留 Issue ID 便于回查平台聚合。
+
+**A 类 · 主线程自己太忙（耗时 / IO / 同步调用）**
+
+> 🔧 `store` 等取任务锁，锁内又卡在网络　`ID: D4D11C8A…`
+> **根因**：主线程执行 store 时等 `processNextTask` 的锁，而**这把锁内部还在阻塞等网络结果**——锁被网络 IO 拖长。
+> **解决**：网络请求移到锁外，**锁内只做"取任务"**，缩短持锁时间。
+
+> 🔧 `onDetachedFromWindow` 同步 release 播放器　`ID: 5046EA3D…`
+> **根因**：主线程 `onDetachedFromWindow` 直接调到 `IjkMediaPlayer.release()`，同步释放耗时。
+> **解决**：①引用先存局部变量 ②立即置空防重复调用 ③异步执行 `stop()/release()`。
+
+> 🔧 `EasyDataStore` 主线程 `runBlocking`　`ID: FAF55E8F… / 5832C3F5…`
+> **根因**：`putData/clearData` 在主线程 `runBlocking` 同步等协程，直接卡死主线程。
+> **解决**：去掉 runBlocking，改异步写入。
+
+> 🔧 `IjkPlayView.openVideo()` 内同步 `reset()`　`ID: B128B3C0…`
+> **根因**：`openVideo()` 同步调用 `reset()`，主线程阻塞。
+> **解决**：reset 异步化 / 移出主线程。
+
+> 🔧 `CameraClickActivity` 存相册走主线程 I/O　`ID: 2848AFD7…`
+> **根因**：保存本地相册的文件 I/O 放在主线程（即收口里说的 `saveToAlbum` 那类）。
+> **解决**：I/O 移出主线程。
+
+**B 类 · 被别人困住（同步 Binder / 锁竞争）**
+
+> 🔧 主线程同步 Binder 打到系统 `MediaProvider`　`ID: EECF74B4…`
+> **根因**：主线程经 Binder 与系统 MediaProvider 进程通信，**对端进程繁忙**时主线程卡在 transact。
+> **解决**：查询移到协程，完成后再回主线程处理。
+
+> 🔧 APNG 后台解码线程抢 `MessageQueue` 锁 → Input 类型 ANR　`ID: AD8CD1F1… / F5FC358B…`
+> **现象**：打开 `CameraClickActivity` 触发 ANR，主线程卡在 `MessageQueue.next()` 超 5s（Input 类型）。
+> **追踪**：trace 里 `FrameDecoderExecutor-3` 持 MessageQueue 锁正在 `enqueueMessage`，其余解码线程与主线程同等这把锁 → 全局搜 `APNGDrawable` 使用者、排除三方 SDK 后定位 `DragFloatActionNew2Button`（`BaseActivity.onCreate()` 构造，每实例 2 个常驻解码线程；回退栈存活 2 个 BaseActivity ⇒ 4 个 `FrameDecoderExecutor`，与 trace 线程数吻合）。
+> **根因**：`onStop()` 没暂停 APNG 解码线程，它们以帧率频率狂 `Handler.post() → enqueueMessage()` 抢锁，**回退栈越深竞争越凶**，卡死主线程 `next()`。
+> **解决**：Button 加 `pause/resumeApngAnimations()`（调两个 drawable 的 `stop()/start()`）；`onStop()` 暂停、`onStart()` 恢复——**不可见即停解码线程**，消除后台锁竞争。
+
 ---
 
 ## 思考题

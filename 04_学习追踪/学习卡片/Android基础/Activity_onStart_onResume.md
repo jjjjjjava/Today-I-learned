@@ -3,12 +3,12 @@ type: learning-card
 id: Activity_onStart_onResume
 主题: Android基础/Activity生命周期
 创建日期: 2026-06-11
-上次复习: null
-下次复习: 2026-06-25
-间隔天数: 1
+上次复习: 2026-06-29
+下次复习: 2026-07-02
+间隔天数: 3
 难度系数: 2.5
-复习次数: 0
-连续答对: 0
+复习次数: 1
+连续答对: 1
 失误次数: 0
 易错: true
 状态: 需复习
@@ -37,4 +37,4 @@ id: Activity_onStart_onResume
 
 | 日期 | 自评 | 间隔天数 | 下次复习 | 备注 |
 |---|---|---:|---:|---|
-|  |  |  |  |  |
+| 2026-06-29 | 顺畅 | 3 | 2026-07-02 | 主线对：onStart可见/onResume可交互；Q3半透明·Dialog Activity边界今日补（下层停onPause仍可见≠onStop）。易错保留待下轮清 |

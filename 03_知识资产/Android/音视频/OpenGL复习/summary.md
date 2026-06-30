@@ -70,6 +70,19 @@
 
 ---
 
+## 实战踩坑排查（见 [08_渲染异常排查](08_渲染异常排查.md)）
+
+> 真实遇到的渲染异常 + 定位手法。定位两板斧：**① 中间变量当颜色输出（shader printf）；② 显眼 clear 色 / 固定常数做二分对照**。
+
+| 问题 | 根因 | 定位关键 | 修复 |
+|---|---|---|---|
+| JPG 水印导致**全黑** | JPG 无 alpha 通道，`mix` 因子恒 1，水印盖满屏 | CPU 侧 `hasAlpha()`；shader 把 `wm.a` 画成灰度全白实锤 | 换 PNG / 亮度阈值自造 alpha；OES 与 2D 分两工位 |
+| **首帧黑屏** | 渲染抢在 `onFrameAvailable` 前，OES 纹理空 | 红 clear 分流（黑=画了输出黑）；`draw` 时间戳早于 `onFrameAvailable` 定罪 | 渲染由 `onFrameAvailable` 驱动，`updateTexImage` 后才 draw |
+
+> 方法论一句话：**颜色负责分流，时间戳负责定罪**；确凿证据上 AGI / RenderDoc 抓帧。
+
+---
+
 ## 几处关键纠偏（复习中踩过/问过的点）
 
 1. **updateTexImage 是换指针不是上传**——零拷贝的核心，纹理对象内部指针指向最新 GraphicBuffer。
