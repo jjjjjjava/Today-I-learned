@@ -28,11 +28,12 @@ Create:
 
 - `99_模板/学习日志模板.md`: daily fact log template.
 
-Do not bulk-edit historical files:
+Historical migration rule from user:
 
-- `02_动态执行/今日任务/*.md`
-- `02_动态执行/本周计划/*.md`
-- `02_动态执行/学习日志/*.md`
+- Do not modify `03_知识资产/**`.
+- Convert historical `02_动态执行/学习日志/*.md` into v2 fact logs.
+- Delete old `02_动态执行/今日任务/*.md` and `02_动态执行/本周计划/*.md` if they are awkward to migrate.
+- Preserve current learning cards and queue indexes under `04_学习追踪/**`, but update their structure to v2.
 
 ---
 
@@ -944,3 +945,64 @@ git log --oneline -8
 
 Expected: shows commits for the v2 protocol, task pool, daily template, weekly template, queue indexes, learning card template, learning log template, and the implementation plan.
 
+---
+
+### Task 9: Migrate Or Remove Historical Dynamic Execution Files
+
+**Files:**
+- Modify: `02_动态执行/学习日志/2026-06-11.md`
+- Modify: `02_动态执行/学习日志/2026-06-15.md`
+- Delete: `02_动态执行/今日任务/*.md`
+- Delete: `02_动态执行/本周计划/*.md`
+- Verify untouched: `03_知识资产/**`
+
+- [ ] **Step 1: Convert historical learning logs to v2 fact-log shape**
+
+Rewrite each historical learning log with:
+
+```text
+type: learning-log
+date: 原日期
+status: closed
+rule: 学习日志只记录事实流水和决策理由，不作为状态源
+```
+
+Keep factual learning outcomes, card points, and writeback notes. Do not keep old state-source tables.
+
+- [ ] **Step 2: Delete old daily workbench snapshots and weekly plan snapshots**
+
+Remove old files under:
+
+```text
+02_动态执行/今日任务/
+02_动态执行/本周计划/
+```
+
+These old files predate v2 and are not reliable state sources.
+
+- [ ] **Step 3: Verify no core knowledge assets changed**
+
+Run:
+
+```bash
+git diff --name-only -- 03_知识资产
+```
+
+Expected: no output.
+
+- [ ] **Step 4: Verify historical dynamic execution has no old state-source terms**
+
+Run:
+
+```bash
+rg -n "掌握度|放回任务池|本周回流区|今日状态更新|未完成回流区" 02_动态执行 99_模板 04_学习追踪
+```
+
+Expected: no matches except intentional historical wording inside design/plan docs if the command is broadened to `docs`.
+
+- [ ] **Step 5: Commit historical migration**
+
+```bash
+git add 02_动态执行 docs/superpowers/plans/2026-07-02-learning-tracking-v2.md
+git commit -m "docs: migrate dynamic execution history to v2"
+```
