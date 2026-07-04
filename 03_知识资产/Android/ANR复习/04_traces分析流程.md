@@ -40,7 +40,7 @@
 
 ```text
 1. FileObserver       —— 观测系统 trace 文件
-2. BroadcastReceiver  —— 接收系统 ANR 广播做定性确认
+2. 错误状态轮询       —— ActivityManager.getProcessesInErrorState() 定性确认
 3. Bugly 线程（Watchdog）—— 主动探活 + 抓栈，监控核心
 ```
 
@@ -48,8 +48,8 @@
 `appNotResponding` 被调用后，系统会自己 dump 堆栈写入系统 trace 文件。Bugly 用 FileObserver 监听这个文件的写入，一旦有写入，就能拿到"系统判定的 ANR 原因"。
 > ⚠️ 但随着 Android 版本权限收紧（11+ 起 SELinux 收紧 `/data/anr/`），普通 App 基本读不到了——**这条路在高版本已基本失效**，最多算兜底。
 
-**② BroadcastReceiver：定性确认**
-系统真正进入爆雷处理流程时会发出 ANR 相关广播。Bugly 收到它，就能确认"**确实发生了系统 ANR**"，而不是自己误判。
+**② 错误状态轮询：定性确认**
+⚠️ 系统对第三方 App **没有 ANR 广播/回调**（这点和 crash 不同）。真实定性手段是轮询 `ActivityManager.getProcessesInErrorState()`：爆雷后 AMS 把进程标为 `NOT_RESPONDING`，轮询到即可确认"**确实发生了系统 ANR**"；返回的 `ProcessErrorStateInfo` 还带 shortMsg/longMsg——平台 issue 标题里的 reason（如 "Input dispatching timed out"）正是从这里来的。
 
 **③ Bugly 线程（Watchdog）：监控核心**
 这是 Bugly 工作的核心，一个死循环探活：
@@ -62,7 +62,7 @@
   4. 醒来检查标记位：
        仍是 false → 说明主线程 5s 内没处理到这个消息 → 大概率卡了
                   → 抓所有线程堆栈暂存（但先不上报）
-  5. 只有等收到系统 ANR 广播、确认不是误报，才把暂存的堆栈上报
+  5. 只有轮询 getProcessesInErrorState() 查到 NOT_RESPONDING、确认不是误报，才把暂存的堆栈上报
 ```
 
 关于 Watchdog 抓的栈，记两个限制：
@@ -82,7 +82,7 @@ Watchdog 这套"旁观探活"也带来**两个固有缺陷**：
         （正好呼应第 1 篇思考题 3：App 自检探不到 Input ANR）
 ```
 
-> 小结：**系统 trace 是 `appNotResponding` 时由 SignalCatcher 收 SIGQUIT 一次性 dump 的；Bugly 则靠 Watchdog 每 5s 探活抓 Java 栈、再用广播定性确认才上报。**
+> 小结：**系统 trace 是 `appNotResponding` 时由 SignalCatcher 收 SIGQUIT 一次性 dump 的；Bugly 则靠 Watchdog 每 5s 探活抓 Java 栈、再轮询错误状态定性确认才上报。**
 
 ### 二、trace 文件的特殊性
 
@@ -103,7 +103,7 @@ Watchdog 这套"旁观探活"也带来**两个固有缺陷**：
 所以经常出现这种现象：
 
 ```text
-明明报了 ANR，trace 里主线程却 sleep 在 MessageQueue.next（消息队列没消息）——
+明明报了 ANR，trace 里主线程却是 Native 态趴在 nativePollOnce / epoll_wait（MessageQueue.next 的空闲等待，消息队列没消息；注意 state 是 Native 不是 Sleeping）——
 一个很"干净"的状态。这多半是抓到了 ANR 前后、而非发生时的现场。
 这种帧基本作废，得换样本或看聚合，绝不能据此说"主线程没问题"。
 ```
@@ -146,7 +146,7 @@ Input            前台 5s
 ```text
 RUNNABLE + 栈顶是 IO 等耗时任务   → A 类：自己太忙，在执行耗时代码
 WAITING / BLOCKED + 栈顶在等锁    → B 类：被别人困住了
-sleep 在 native 的 MessageQueue.next → 抓到无用帧了，换样本分析
+Native 态趴在 nativePollOnce（MessageQueue.next 空闲等待）→ 抓到无用帧了，换样本分析
 ```
 
 **第三层 · 追堆栈 + 锁链：定性到根**

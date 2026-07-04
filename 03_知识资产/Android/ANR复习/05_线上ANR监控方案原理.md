@@ -58,7 +58,7 @@ Bugly 不介入信号流程，靠**三个组件**协作（细节见第 4 篇，�
 ```text
 1. FileObserver     —— 监听系统 trace 文件的写入，拿系统判定的 ANR 现场。
                        但 Android 高版本 SELinux 收紧 /data/anr/，基本失效，只能兜底。
-2. BroadcastReceiver—— 系统爆雷时会发 ANR 广播，收到即可【定性】确实发生了 ANR。
+2. 错误状态轮询    —— 轮询 ActivityManager.getProcessesInErrorState()，查到 NOT_RESPONDING 即【定性】确实发生了 ANR（系统对第三方 App 没有 ANR 广播）。
 3. Bugly 线程(Watchdog)—— 核心：死循环每 5s post 一个消息到主线程改标记位、再 sleep 5s；
                        醒来若标记位没被改，说明主线程没及时处理 → 大概率卡了 → 抓栈暂存；
                        但先不上报，等收到 ANR 广播确认非误报，才上报。
