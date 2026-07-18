@@ -29,12 +29,19 @@
 - [x] 能区分 `sigaction` 与 `sigwait`，并解释「同一信号只能消费一次」带来的核心冲突
 - [x] 能对比 Bugly / xCrash / Matrix 三方案，并说清 Matrix 委托线程模式为何更可靠
 
+### 模块五 · ANR 线上治理方法论
+- [x] 能说明 Lint、自动化/压力测试、灰度监控和全量常态化监控各自拦截什么，以及为什么仍会留下线上长尾
+- [x] 能区分单点归因、聚合归因和爆发归因，并用「拐点 → 增量聚类 → 人群边界 → 变更时间线 → 反向验证」完成爆发归因
+- [x] 能根据灰度期和全量期选择暂停扩量、功能开关、合规热修复、紧急新包或下版本修复
+- [x] 能根据聚合结论做定向灰度，同时验证目标聚类收敛、整体稳定性和功能安全
+
 ## 不在本课题范围内
 
 - 图形渲染、布局优化、过度绘制、空间投影等性能话题（与 ANR 无直接关系）
 - Handler / Looper / MessageQueue 的完整源码实现（仅在解释 ANR 链路时按需引用，不展开消息机制本身）
 - Binder 驱动层细节（仅用到「跨进程调用」这一抽象，不深入驱动）
 - 具体监控 SDK 的接入与配置（只讲机制原理，不讲集成步骤）
+- 完整自定义 Lint 插件和热修复框架的工程实现（只掌握它们在治理体系中的职责、基本原理和能力边界）
 
 ## 学习进度
 
@@ -44,5 +51,5 @@
 | 02.md | 模块二前两条（Service 全链路；mExecutingServices vs executeNesting，executingStart 才是判据）✅ 已复述评估，掌握；纠正点：阈值 20s/200s、nesting≠多次埋雷、爆雷找最早 | 2026-06-22 |
 | 03.md | 模块二后两条（四类阈值/爆雷处理、两大类划分；ContentProvider 异类、Input 独立王国）✅ 已按学员思路重排+Input 四层骨架；纠正点：Reader/Receiver 分侧、outboundQueue、Provider 与 Application.onCreate 顺序 | 2026-06-22 |
 | 04_traces分析流程.md | 模块三全部（trace 来源[Bugly 三组件]+快照滞后特殊性+三步分析法；A/B/C 融入第三层；锁链追踪+死锁判定+速查卡）＋模块四 Bugly 旁观者部分；✅ 按学员复述覆写，含真实极验/联通 AB-BA 死锁锁链案例；校准：5s 采样 vs SignalCatcher 一次性 dump、Watchdog 仅 Java 栈、误报/漏报 Input | 2026-06-23 |
-| 05_SIGQUIT与xCrashMatrix.md | 模块四全部（SIGQUIT→SignalCatcher dump；sigaction vs sigwait + 信号只能消费一次的冲突；Bugly/xCrash/Matrix 对比 + Matrix 为何更可靠）✅ 按学员"如果让你设计监控方案"设计视角重写（被动 vs 主动），与第 1 篇设计题对称；校准：信号上下文/async-signal-safe（非"系统调用"）、Matrix 真因是时序可控 | 2026-06-23 |
-| 06_面试范本_Bugly与trace分析SOP.md | 课程完结后融合重构篇（2026-07-02 二复产出）：Bugly 原理 + SOP 融成面试口语版，主线「进程内旁观者→进程边界推全部局限」；勘误落盘：系统无 ANR 广播（定性=轮询 getProcessesInErrorState）、进程内拿不到系统 CPU（ProcessCpuTracker 是 system_server 写的）、空闲主线程是 Native 态非 Sleeping、InputReader vs InputEventReceiver、爆雷找 executingStart 最早；SOP 改为无 CPU 数据口径（聚合分诊→定性→验伪→判态归因[环境类用代理证据]→治理回归）；同步修正 04/05 篇广播表述 | 2026-07-02 |
+| 05_线上ANR监控方案原理.md | 模块四全部（SIGQUIT→SignalCatcher dump；sigaction vs sigwait + 信号只能消费一次的冲突；Bugly/xCrash/Matrix 对比 + Matrix 为何更可靠）✅ 按学员"如果让你设计监控方案"设计视角重写（被动 vs 主动），与第 1 篇设计题对称；校准：信号上下文/async-signal-safe（非"系统调用"）、Matrix 真因是时序可控 | 2026-06-23 |
+| 06_ANR线上治理方法论.md | 模块五全部：四层前置防线、单点/聚合/爆发三层归因、灰度期与全量期的差异化止损、定向灰度验证和经验回填；经 Android、Google Play 与 Google SRE 官方资料校准，补充暂停灰度不回退已安装用户及 `patch.dex` 的分发合规边界 | 2026-07-14 |

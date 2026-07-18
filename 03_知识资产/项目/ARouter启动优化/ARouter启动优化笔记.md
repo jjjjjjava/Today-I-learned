@@ -1,12 +1,137 @@
 # ARouter 启动优化笔记
 
+> 本文是“启动优化方法论”中增量劣化治理路线的项目案例。首页案例负责说明如何降低存量水位；本案例负责说明一次构建升级如何穿透前置防线，并在灰度阶段被发现、止损、修复和回填。
+
+## 0. 接入启动优化方法论：一次穿透前置防线的增量劣化
+
+### 0.1 为什么这是增量劣化治理
+
+这次不是稳定版本长期偏慢，而是升级 Gradle/AGP 后，候选版本相对原稳定版突然变慢。
+
+因此它属于增量治理：
+
+```text
+Gradle / AGP 升级
+→ ARouter register 插件链路失效
+→ 运行时回退到 Dex 扫描
+→ 候选版本冷启动突然劣化
+→ 灰度 Stage/Task 告警
+```
+
+完整处理链路是：
+
+```text
+静态检测、CI、整包自动化漏网
+→ 灰度告警
+→ startup.stage.app_init
+→ startup.task.arouter.init
+→ 暂停放量并选择低端机复现
+→ AS Profiler 快速定位 Dex 扫描
+→ 查 GitHub issue，修复 AGP 插件链路
+→ 再处理 Java 21 / ASM / variant 兼容
+→ 建立可重复 Benchmark
+→ 分级灰度
+→ 回到原冷启动水位
+→ 将事故条件回填 CI
+```
+
+### 0.2 为什么有预算，CI 和自动化仍然没拦住
+
+项目已经为 `app_init` 和 `arouter.init` 设置预算。问题不是“预算不够严格”，而是测试没有稳定触发超预算路径。
+
+ARouter 的运行时 Dex 扫描存在 SP 缓存：
+
+```text
+首次安装 / 包版本变化后的第一次启动
+→ 扫描 Dex，记录 routes 类名集合
+→ 写入 SP
+
+后续启动
+→ 读取 SP 中的类名集合
+→ 不再执行完整 Dex 扫描
+```
+
+因此原有 Benchmark 只有第一次可能出现 7～8 秒扫描，后续轮次命中缓存后恢复到较短耗时。如果流水线复用应用数据、把首轮当作 warm-up，或者只看多轮中位数，这个一次性劣化就会被隐藏。
+
+各层防线的真实能力边界是：
+
+| 防线 | 为什么漏网 |
+| --- | --- |
+| 静态 Lint | 业务代码没有新增主线程 IO；变化发生在构建插件是否成功插桩，普通源码规则无法判断 |
+| MR CI Benchmark | 没有固定覆盖“升级安装后的第一次冷启动”，SP 缓存让后续样本恢复正常 |
+| 整包自动化 | 场景覆盖了常规冷启动，但没有把 clean install、upgrade first launch 与 cache-hit 分开统计 |
+| 灰度 | 真实用户升级后第一次启动天然满足缓存失效条件，因此最终暴露问题 |
+
+这次事故说明：
+
+> **有预算不等于有防线。只有测试真正执行到超预算路径，预算门禁才有意义。**
+
+### 0.3 灰度沿 Stage/Task 定位
+
+灰度告警后，先按版本、启动场景和设备档位比较，再沿统一埋点下钻：
+
+```text
+startup.total
+└── startup.stage.app_init
+    └── startup.task.arouter.init
+```
+
+`startup.stage.app_init` 对应 Application 初始化阶段；不要再把 Stage 写成笼统的 `Application.onCreate`。`startup.task.arouter.init` 才是本次横向对比中增量最大的具体任务。
+
+演练用的 P50 采用 Mock 数据，P90 和本地 Profiler 使用项目记录：
+
+| 版本 | P50（Mock） | LOW 档 P90 | 说明 |
+| --- | ---: | ---: | --- |
+| 原稳定版，旧 Gradle | 2.1s | 4.5s | 原冷启动水位 |
+| 灰度候选版，新 Gradle、插件失效 | 5.6s | 12.8s | P90 相对基线增加约 8.3s |
+| 修复版，新 Gradle、插件恢复 | 2.2s | 约 4.7s | ARouter 劣化基本消除 |
+
+这里必须明确：P50 是面试演练用 Mock 值，不得表述为生产平台真实数据。
+
+P90 的正确表达也不是“P90 劣化到了 8.3s”，而是：
+
+> **LOW 档 P90 从约 4.5s 上升到 12.8s，相对劣化约 8.3s。**
+
+### 0.4 如何剥离 Gradle 升级本身的影响
+
+事故由 Gradle/AGP 升级触发，但不能把候选版的全部 8.3 秒都笼统归因给 Gradle。需要三个版本做对照：
+
+```text
+A：旧 Gradle + 原稳定插件链路
+B：新 Gradle + register 插桩失效
+C：新 Gradle + register 插桩修复
+```
+
+- `B → C`：Gradle 环境相同，主要差异是 ARouter 插桩是否生效，可以隔离 ARouter 修复收益。
+- `A → C`：ARouter 都处于正常路径，用来观察升级 Gradle 后是否仍有剩余启动差异。
+
+如果 `B` 的 LOW P90 是 12.8s，`C` 回到约 4.5s，可以说“约 8.3 秒的 ARouter 劣化被消除”。但不能仅凭最终都为 4.5s 就断言 Gradle 升级完全没有影响；还要结合样本量、波动区间和其他 Stage 对比。
+
+### 0.5 为什么紧急定位选择 AS Profiler
+
+这次已经由线上 Stage/Task 把范围缩小到 `arouter.init`，而且是 8 秒级单点异常。紧急流程的目标是尽快回答“ARouter 内部在做什么”，不是先完成一套精细的系统级归因。
+
+因此使用 Android Studio Profiler 查看方法调用栈：
+
+```text
+ARouter.init
+→ LogisticsCenter.init
+→ ClassUtils.getFileNameByPackageName
+→ DexFile.openDexFile
+→ openDexFileNative
+```
+
+Profiler 很快确认候选版本没有走编译期 register 路径，而是回退到了运行时 Dex 扫描。它适合定位这种秒级单点瓶颈；最终收益仍需由 Benchmark、Stage/Task 和灰度数据证明。
+
 ## 1. 优化口径
 
 ### 1.1 问题背景
 
-这个问题是我在日常开发中遇到的，我喜欢打debug包：在小米 8 这类设备上，App 冷启动到首页可见很多时候会达到 10s左右，启动体感明显异常。
+这个问题首先由灰度告警发现，而不是个人打 Debug 包偶然发现。线上已经定位到 `startup.stage.app_init`，并进一步看到 `startup.task.arouter.init` 横向对比增长最多。
 
-我想去看问题到底在哪，所以我要先圈定一个可分析、可复现、可对比的启动区间，找出到底是哪段业务链路卡住了启动。
+为了快速复现，我们选择低端机和首次安装/升级后的第一次冷启动。小米 8 这类设备能把 Dex 打开、类名遍历和反射加载的成本进一步放大，启动到首页可见会接近 10 秒。
+
+线上 Stage/Task 负责缩小范围；本地 Profiler 负责解释 `arouter.init` 内部为什么慢；后续 Benchmark 负责证明修复前后差异。
 
 ### 1.2 主统计区间
 
@@ -22,14 +147,23 @@ Application.attachBaseContext() -> 首页可见
 
 终点选择首页可见，或者 `HomeOldActivity.onWindowFocusChanged(true)` 附近，是为了覆盖从业务初始化到首页真正展示出来的过程，而不是只停在 `Activity.onCreate()` 或 `onResume()` 这类生命周期节点。
 
+同时保留一组更窄的任务口径：
+
+```text
+startup.stage.app_init
+└── startup.task.arouter.init
+```
+
+总启动区间回答“用户最终慢了多少”，`arouter.init` Task 回答“本次增量由谁贡献”。
+
 ### 1.3 面试表达
 
 可以这样表达：
 
 ```text
-这次不是为了做线上严格 TTFD 指标，而是为了在本地复现启动慢时，圈定业务可控启动区间，然后抓 trace 找出主要耗时点。
+线上用 startup.total、startup.stage.app_init 和 startup.task.arouter.init 判断影响范围与增量贡献。
 
-所以我把区间定义为 Application.attachBaseContext 到首页可见。完整冷启动当然还包括 AMS、Zygote fork、进程创建等系统阶段，但这些不是本次主要优化对象。我关注的是业务代码在启动链路里到底做了哪些耗时工作。
+本地复现时，再用 Application.attachBaseContext 到首页可见圈定业务可控区间，并以 arouter.init 作为方法归因锚点。线上口径负责发现和验收，本地区间负责快速解释根因，两者不能混用绝对值。
 ```
 
 ## 2. 方案选型
@@ -61,9 +195,9 @@ Profiler 的结果不能直接等价为真实线上启动耗时。
 可以这样表达：
 
 ```text
-因为这个问题最初是我在本地 adb debug 时发现的，不是已经立项的专项优化，所以我先选择成本最低、反馈最快的 Android Studio Profiler 作为第一层归因工具。
+灰度已经把问题定位到 startup.task.arouter.init，而且是 8 秒级异常。紧急流程优先追求定位速度，所以我选择成本较低、能直接看方法调用栈的 Android Studio Profiler。
 
-Profiler 不适合直接等价线上真实耗时，也不适合判断很小的收益。但这次是 10s 级别的异常慢，我先用它判断是否存在秒级重量级任务。如果无法完全判断，或者耗时比较分散，或者目标是几百毫秒级优化，我会再切到 Perfetto + 统一口径做精细化统计。
+Profiler 不等价于线上真实耗时，也不适合判断小收益。但这次只需要快速确认 ARouter 内部是否存在秒级任务。最终修复收益仍由同环境 Benchmark、线上 Stage/Task 和分级灰度证明。
 ```
 
 ## 3. 数据计算 / Profiler 数据读取
@@ -158,26 +292,44 @@ ARouter 的 taskPool 中有一个线程执行 run()
 
 落地过程中不是简单接一个现成插件。
 
-首先，原版Alibaba官方仓库是有 `arouter-register` 插件的，但是太老了，21年后就不维护了，不兼容当前项目的 AGP8 环境。这个判断不是凭空猜的，而是先查了 GitHub issue，确认社区里已经有人反馈 AGP8 兼容问题，所以没有继续在原插件上硬接。
+#### 第一轮：Gradle/AGP 升级后，官方 register 插件失效
 
-后面改用一个兼容 AGP8 的三方 ARouter 插件，并把源码接进项目验证。接入后又遇到 Java 21 字节码兼容问题：
+Alibaba 官方 `arouter-register` 基于旧 Transform API。升级 AGP 8 后，`registerTransform` 被移除，插件无法继续沿原方式接管 class 产物。
+
+这个判断不是凭空猜测。我们先检索 GitHub issue，找到 [ARouter #1070：registerTransform 被移除，需要适配 Gradle 8](https://github.com/alibaba/ARouter/issues/1070)，再决定不在旧插件上继续硬接。
+
+第一轮处理是引入支持 AGP 7.4+/8 的 [JailedBird/ArouterGradlePlugin](https://github.com/JailedBird/ArouterGradlePlugin)。它通过新的 AGP 构建产物 API 扫描路由表 class，并对 `LogisticsCenter.loadRouterMap()` 做 ASM 插桩。
+
+#### 第二轮：项目升级 Java 21，插件再次不兼容
+
+AGP 8 问题处理后，Java 21 构建又出现：
 
 ```text
 Unsupported class file major version 65
 ```
 
-这个问题是在插件源码执行过程中暴露出来的。插件用 ASM 的 `ClassReader` 读取编译后的 class 字节码文件时，会先解析 class 文件头里的 version。Java 21 对应 major version 65，而插件内部使用的 ASM 版本不支持这个 class 文件版本，所以在读取字节码时直接失败。
+异常发生在插件读取编译产物时。插件使用 ASM `ClassReader` 解析 `.class` 文件头，Java 21 对应 major version 65，旧 ASM 不认识该版本，因此还没完成插桩就失败。
 
-因此我 fork 了插件并自己修复，主要处理：
+我们 fork 了 JailedBird 插件并形成 [jjjjjjava/ArouterGradlePlugin](https://github.com/jjjjjjava/ArouterGradlePlugin)，主要处理：
 
 ```text
-升级 ASM 版本，使其支持 Java 21 class 文件
-检查 ASM API 常量，例如从 Opcodes.ASM7 调整到 ASM9
-确保插件运行时使用正确 ASM 依赖
-修复后发布自己的 ARouter Gradle 插件供项目接入
+ASM / asm-commons / asm-tree 升级到 9.7
+Opcodes.ASM7 调整为 ASM9
+确保插件运行时依赖真正解析到新版 ASM
+修复 Debug / debug 等 variant 大小写匹配
+发布自维护插件版本
 ```
 
-这个修复也提了 PR 到对方项目。对方项目是百星级开源项目，作者邮件回复表示感谢，并在项目中对我的贡献做了致谢。
+Java 21 修复提交到上游 [PR #16](https://github.com/JailedBird/ArouterGradlePlugin/pull/16)，随后上游发布了 Java 21 兼容版本。
+
+当前项目使用的是自维护版本：
+
+```groovy
+classpath "com.github.jjjjjjava.ArouterGradlePlugin:arouter-gradle-plugin:v1.0.5"
+apply plugin: "io.github.jjjjjjava.ARouterPlugin"
+```
+
+两轮问题要分开表达：第一轮解决“AGP 8 下怎么继续介入构建”；第二轮解决“Java 21 class 能不能被插件中的 ASM 正确读取和改写”。
 
 ### 6.2 编译成功后验证插件是否真正生效
 
@@ -189,13 +341,63 @@ Unsupported class file major version 65
 
 修复 variant 命名兼容后，`loadRouterMap()` 才真正被插桩。也只有这个方法里实际插入了 `register(...)` 调用，运行时 ARouter 初始化才能跳过后续 dex 扫描。
 
-### 6.3 回归验证
+### 6.3 为什么 Benchmark 只有第一次能复现
+
+修复过程中遇到一个测量问题：未插桩版本只有第一次启动稳定出现 Dex 扫描，之后再跑就无法复现。
+
+原因不是问题消失，而是第一次扫描后，ARouter 把 routes 类名集合写入 SP。后续 Benchmark 命中缓存，不再重复完整扫描。
+
+如果连续运行十次并取中位数，结果可能是：
+
+```text
+第 1 次：7～8 秒，触发 Dex 扫描
+第 2～10 次：命中 SP 缓存，只有几十毫秒
+中位数：看起来没有明显劣化
+```
+
+这正是 CI 和自动化漏网的关键原因，也是为什么灰度中的真实升级用户反而先触发告警。
+
+为了稳定复现，我们在自维护插件和 Benchmark 变体中增加测试专用开关，让每轮测量前强制失效或绕过 ARouter 的 routes SP 缓存，保证未插桩版本每次都走 Dex 扫描。
+
+这里需要校准术语：
+
+> **SP 缓存属于 ARouter 运行时扫描逻辑，不是 Gradle 插件自身的缓存。插件提供的是 Benchmark 专用的失效/绕过手段，生产版本不能为了测量方便永久删除缓存。**
+
+最终验证必须覆盖两条路径：
+
+| 场景 | 验证目标 |
+| --- | --- |
+| clean install / upgrade first launch | 插件生效后不再因为无 SP 缓存而回退 Dex 扫描 |
+| cache-hit cold start | 后续启动保持正常，路由表仍完整注册 |
+
+另外，项目当前 Debug 配置可以关闭插桩。AS Profiler 用于紧急复现和归因；证明生产修复效果时，应使用 Release 或显式开启 Transform 的 Benchmark 变体。
+
+### 6.4 性能与功能验证
 
 性能验证分首次冷启动和后续启动看。
 
-首次冷启动收益最明显。因为首次启动没有可用的 `SP` 缓存，原来会走 dex 扫描，需要打开 dex、遍历类名，所以优化后从 dex 扫描变成 `loadRouterMap()` 里的方法调用，ARouter 初始化从总计7.84s降到 100ms 以内，整体冷启动从约 9.4s 降到约 1.54s。
+首次冷启动收益最明显。没有可用 SP 缓存时，原路径会打开 Dex 并遍历类名；插桩后改为直接执行 `loadRouterMap()` 中的 `register(...)`。
+
+本地 Profiler/验证数据为：
+
+| 指标 | 修复前 | 修复后 |
+| --- | ---: | ---: |
+| ARouter 初始化 | 约 7.84s | 100ms 以内 |
+| 本地整段冷启动 | 约 9.4s | 约 1.54s |
+
+这些数字来自本地低端机和 Profiler 区间，不应与线上 P50/P90 混为一组数据。
 
 后续启动原来可能命中 `SP` 缓存，不一定每次都重新扫描 dex。这个场景下原方案大致是一次 `SharedPreferences` 读取，加上遍历缓存中的 routes 类名、反射装载路由表。正常情况下耗时可能是几十毫秒级，具体取决于路由表数量和设备 I/O 状态；插件方案则进一步变成直接执行 `loadRouterMap()` 中的 `register(...)` 方法调用，通常可以压到几毫秒到十几毫秒级，并且不受新安装、包更新、debug 安装导致缓存失效的影响。
+
+灰度修复结果按增量治理口径表达为：
+
+```text
+原稳定版 LOW P90：约 4.5s
+升级候选版 LOW P90：约 12.8s
+修复版 LOW P90：约 4.5s
+```
+
+因此消除的是候选版相对稳定版新增的约 8.3 秒，而不是把应用原本的 4.5 秒存量耗时也一起优化掉。修复完成后，启动路线回到原有冷启动基线，剩余 4.5 秒继续由存量治理负责。
 
 功能回归重点包括：
 
@@ -209,7 +411,30 @@ debug / release 构建正常
 AGP8 + Java21 环境下插件稳定可用
 ```
 
-### 6.4 面试表达
+### 6.5 回填增量防线
+
+事故修复后，不能只把代码合进去，还要把漏网条件固化到防线：
+
+```text
+CI 场景
+├── clean install first launch
+├── upgrade first launch
+└── cache-hit cold start
+
+预算
+├── startup.stage.app_init
+└── startup.task.arouter.init
+
+构建校验
+├── 目标 variant 确实执行插桩任务
+├── loadRouterMap 中存在 register 调用
+├── registerByPlugin 路径生效
+└── Java 21 / AGP 8 / Release 构建矩阵通过
+```
+
+CI 不应把第一次启动当作可丢弃的 warm-up。首次安装和升级后的第一次启动必须单独出结果，并直接检查 `arouter.init` Task 是否超预算。
+
+### 6.6 工程落地表达
 
 可以这样表达：
 
@@ -225,4 +450,29 @@ AGP8 + Java21 环境下插件稳定可用
 
 ## 7. 面试表达
 
-待补充。
+### 7.1 两分钟主线
+
+> 这个案例属于增量劣化治理。我们升级 Gradle/AGP 后，静态检查、CI Benchmark 和整包自动化都没有拦住，最终在灰度阶段触发告警。按版本和 LOW 档设备比较，P90 从原稳定版约 4.5 秒上升到 12.8 秒，相对增加约 8.3 秒。
+>
+> 我们沿统一埋点下钻到 `startup.stage.app_init`，再定位到 `startup.task.arouter.init` 横向增量最大。因为已经是 8 秒级单点异常，紧急阶段选择 AS Profiler 快速看调用栈，很快定位到 `ARouter.init → LogisticsCenter.init → ClassUtils.getFileNameByPackageName → openDexFileNative`，说明 register 插桩失效后回退到了运行时 Dex 扫描。
+>
+> 第一轮先查 GitHub issue，确认 Alibaba 原 `arouter-register` 依赖的 Transform API 在 AGP 8 被移除，于是接入支持 AGP 7.4+/8 的插件，把 routes 类扫描和 `loadRouterMap()` 注册前移到编译期。
+>
+> 后续升级 Java 21 又遇到 `Unsupported class file major version 65`。根因是插件中的旧 ASM `ClassReader` 不认识 Java 21 class。我们 fork 插件，将 ASM 依赖升级到 9.7、API 调整到 ASM9，并修复 Debug 变体大小写和目标 variant 未执行插桩的问题，发布自维护的 v1.0.5。
+>
+> Benchmark 还遇到一个坑：未插桩版本只有第一次慢，之后 ARouter 把扫描结果写入 SP，后续轮次命中缓存，导致中位数掩盖问题。我们给 Benchmark 变体增加测试专用的缓存失效机制，让每轮都能稳定复现首次扫描；最终验证则同时覆盖 first launch 和 cache-hit 两条路径。
+>
+> 修复后本地 ARouter 初始化从约 7.84 秒降到 100 毫秒以内。灰度 LOW P90 从候选版约 12.8 秒回到原基线约 4.5 秒，说明新增的约 8.3 秒劣化被消除。为了剥离 Gradle 本身的影响，我们比较旧 Gradle 稳定版、新 Gradle 故障版和新 Gradle 修复版，主要用同为新 Gradle 的故障版与修复版隔离 ARouter 收益。
+>
+> 最后把 clean install、upgrade first launch、cache-hit 三种场景，以及 `startup.stage.app_init`、`startup.task.arouter.init` 预算和插件生效校验回填 CI，避免相同问题再次穿透到灰度。
+
+### 7.2 一句话收束
+
+> **这次不是把 ARouter 做得比以前更快，而是修复构建升级导致的 register 插桩失效，消除新增的 8.3 秒劣化，让启动回到原本 4.5 秒的冷启动路线，并补上首次启动场景的增量防线。**
+
+## 参考证据
+
+- [Alibaba ARouter #1070：AGP 8 移除 registerTransform 后插件无法编译](https://github.com/alibaba/ARouter/issues/1070)
+- [JailedBird/ArouterGradlePlugin：AGP 7.4+/8 自动注册插件](https://github.com/JailedBird/ArouterGradlePlugin)
+- [JailedBird PR #16：Java 21 / ASM 兼容修复](https://github.com/JailedBird/ArouterGradlePlugin/pull/16)
+- [项目自维护 jjjjjjava/ArouterGradlePlugin](https://github.com/jjjjjjava/ArouterGradlePlugin)

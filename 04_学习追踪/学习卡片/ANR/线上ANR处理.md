@@ -3,16 +3,18 @@ type: learning-card
 id: 线上ANR处理
 主题: 稳定性/线上ANR处理
 创建日期: 2026-06-23
-上次复习: 2026-07-02
-下次复习: 2026-07-10
+上次复习: 2026-07-14
+下次复习: 2026-07-22
 间隔天数: 8
 难度系数: 2.5
-复习次数: 2
-连续答对: 2
+复习次数: 3
+连续答对: 3
 失误次数: 0
 易错: false
 状态: 待复习
-来源: [[../../03_知识资产/项目/ANR]]
+来源:
+  - [[../../../03_知识资产/Android/ANR复习/syllabus]]
+  - [[../../../03_知识资产/Android/ANR复习/06_ANR线上治理方法论]]
 ---
 
 # 线上ANR处理
@@ -40,6 +42,7 @@ id: 线上ANR处理
 |---|---|---:|---:|---|
 | 2026-06-29 | 顺畅 | 3 | 2026-07-02 | 首复（用户判定算过）；同日给来源笔记04补充A/B类真实案例速览（7例带Issue ID） |
 | 2026-07-02 | 顺畅 | 8 | 2026-07-10 | 二复；口头复述覆盖全主链路（Bugly三组件→意义三视角→埋雷拆雷爆雷→Service全链路→四类差异→Input→trace三步SOP→实战案例）。校准3处：爆雷找最早非最近、traces路径/data/anr/traces.txt、Input少outboundQueue一跳。答疑：Watchdog dump=getAllStackTraces仅Java栈、死穴是采样时刻≠ANR时刻。【勘误】Bugly进程内拿不到系统CPU：Android8+ /proc hidepid=2+SELinux挡住/proc/stat与他进程/proc/[pid]，只能读自己进程/线程CPU；ANR日志里的系统CPU段是system_server的ProcessCpuTracker写的，靠系统侧trace(FileObserver读/data/anr/，高版本已被SELinux焊死)才拿得到。【勘误2】系统无ANR广播：Bugly定性=轮询getProcessesInErrorState()（NOT_RESPONDING+shortMsg即reason来源），已修正04/05篇。【勘误3】空闲主线程trace态是Native(nativePollOnce)非Sleeping。SOP改口径：无CPU段→环境类用线程数暴多/多样本栈落点随机/低端机集中做代理证据 |
+| 2026-07-14 | 完成 | 8 | 2026-07-22 | 学习 [[../../../03_知识资产/Android/ANR复习/06_ANR线上治理方法论]]，补强 ANR 治理方法论：前置防线、灰度监控、全量常态化监控、单点/聚合/爆发归因、分阶段止损与修复验证。 |
 
 
 ## 学习完成记录

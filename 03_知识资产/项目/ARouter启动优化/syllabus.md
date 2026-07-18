@@ -1,53 +1,55 @@
-# ARouter 启动优化 · 课程大纲
+# ARouter 启动增量劣化治理 · 课程大纲
 
 > 这份大纲定义了完成本课题后你将掌握的所有能力。
 > 学习深度：深入
 > 文档数量因人而异，但掌握内容不打折扣。
-> 配套素材：同目录 `ARouter启动优化笔记.md`（你的原始项目复盘，作为骨架底料）+ `../../Android/ARouter.md`（ARouter 原理机制底料）
-> 本课目标：**把「项目操作」与「背后 ARouter 原理机制」融成一份知识资产**，让你在面试中以项目为骨架讲出，被追问机制（路由表怎么生成、怎么加载、register 插桩怎么做）时有底。
+> 计划产出：引子、一轮优化、二轮优化、收束四篇面试笔记。
+> 内容原则：项目治理是叙事主线，ARouter 与 Gradle 插件原理完整进入正文，不作为零散补充材料。
 
 ## 核心掌握项
 
 完成本课题后，你将能够：
 
-### 模块一 · 优化口径与问题定位
-- [x] 能讲清「启动优化第一步是定口径」，并说明本项目为何把主统计区间定为 `Application.attachBaseContext()` → 首页可见（业务可控区间），以及终点为何不停在 `onCreate()`/`onResume()`
-- [x] 能讲清第一层归因工具为何选 Android Studio Profiler / Method Trace 而非 Perfetto（10s 级异常慢、目标是快速定位重量级任务、成本最低反馈最快），并说清 Profiler 的局限（采样/插桩开销，不适合判断几百毫秒级收益）；🔧 能区分插桩 `startMethodTracing` 与采样 `startMethodTracingSampling(file, 8MB, 1000μs)` 两种模式的原理与取舍，并解释本项目为何选采样
-- [x] 🔧 能从机制解释 ARouter 是什么、解决什么（用 `path` 间接寻址替代 `Class` 引用 → 解耦 / 动态跳转 / 统一拦截），作为项目背景铺垫
+### 模块一 · 识别并定位启动增量劣化
 
-### 模块二 · Trace 归因与 ARouter 加载机制（重头）
-- [x] 能读 Profiler 数据定位瓶颈：整体 trace 约 9.74s、`openDexFileNative` 约 7.6s，并沿调用栈确认它来自 `ARouter.init` → `LogisticsCenter.init` → `ClassUtils.getFileNameByPackageName` → `DexFile.openDexFileNative`
-- [x] 🔧 能解释 `openDexFileNative` 为什么贵的机制：ARouter 默认 **Dex 扫描方案**——运行时逐个打开 dex、遍历类名、筛 `com.alibaba.android.arouter.routes` 包下生成类、反射 `loadInto()`；项目 dex 多、体量大时被放大
-- [x] 🔧 能解释路由表三大运行时概念 `RouteMeta` / `Postcard` / `Warehouse` 与**分组懒加载**，说清「扫描出的路由表最终装到哪里、怎么按需加载」
-- [x] 🔧 能解释路由表从哪来：编译期 APT 注解处理器 `RouteProcessor` 扫 `@Route` → JavaPoet 生成 `Root` / `Group` / `Provider` 三类文件，以及为什么按 group 分组
+- [x] 能区分“存量启动偏慢”和“版本增量劣化”，并用两轮因果链概括本项目：AGP 升级使插桩失效，Java 21 升级又使旧 ASM 无法读取 Class。
+- [x] 能讲清线上 `stage_app_init → task_arouter.init` 的下钻过程，并准确表达“P90 相对历史版本新增约 8.3 秒”，不把增量说成绝对耗时。
+- [x] 能复述线下复现口径、低端机选择理由，以及为何用 1000 μs Sampling 快速寻找秒级调用栈，同时说清 Profiler 数据与线上 P90 的边界。
 
-### 模块三 · 方案设计：为什么是 register 字节码插桩
-- [x] 能讲清三个候选方案的取舍：异步初始化（没消除 dex 扫描成本 + 路由可用时机问题）、换路由框架（替换成本/回归风险高）、register 插件（贴近根因）
-- [x] 🔧 能解释 register 插桩机制：`LogisticsCenter.loadRouterMap()` 默认是空壳 → Gradle 插件借 AGP Artifacts API 接管 `CLASSES` 产物，用 ASM 在 `loadRouterMap()` 的 `return` 前插入 `register("生成类名")`，把运行时 dex 扫描**前移到编译期**
-- [x] 🔧 能解释为什么 SP 缓存不算根治：它只缓存「上次扫描到的类名集合」，新安装 / 包更新 / debug 频繁安装时缓存失效，仍回退到 dex 扫描
+### 模块二 · 第一轮：ARouter 完整原理与 Dex 扫描治理
 
-### 模块四 · 落地踩坑与回归验证
-- [x] 能复述三个真实踩坑：①原版 `arouter-register` 不兼容 AGP8（先查 GitHub issue 确认，非凭空猜）②Java 21 报 `Unsupported class file major version 65` → fork 升级 ASM ③variant 驼峰命名导致插桩没作用到目标变体
-- [x] 🔧 能解释 Java 17/21 兼容根因：ASM 的 `ClassReader` 读 class 文件头里的 major version，旧 ASM 不认识新版本（Java 17 = 61 / Java 21 = 65），需确保插件运行时真正使用支持新 class version 的 ASM
-- [x] 能复述收益数据与回归口径：首次冷启动 ARouter 初始化从 7.84s → 100ms 内、整体冷启动约 9.4s → 1.54s；功能回归（页面跳转 / Provider / Interceptor / 多模块路由 / debug-release / 不同 variant）；并能讲清「编译通过 ≠ 优化生效」的验证意识
+- [x] 能完整解释 ARouter 如何用 `path` 间接寻址，并串起 `build()`、`Postcard`、`navigation()`、`completion()`、`RouteMeta` 和最终跳转。
+- [x] 能解释 `Warehouse.routes`、`groupsIndex` 与 Group 懒加载，说明 Root、Group、Provider、Interceptor 各自在运行时承担什么职责。
+- [x] 能从 `@Route` 开始，完整复述 `RouteProcessor → RoundEnvironment → Element → RouteMeta → JavaPoet` 生成路由表的编译期链路。
+- [x] 能对比运行时 Dex 扫描与插件注册两条加载路径，准确说明类名筛选、反射 `loadInto()`、SP 缓存，以及 `openDexFileNative` 为什么昂贵。
+- [x] 能比较异步初始化、更换路由框架、恢复插件注册三种方案，并用根因、时序风险、改造成本解释最终选择。
+- [x] 能用同口径 Benchmark、Profiler 和灰度数据证明第一轮修复有效，并区分线上增量指标与本地诊断数据。
 
-### 模块五 · 面试表达与全链路复述
-- [ ] 能用「口径 → 工具 → 数据 → 归因 → 方案 → 落地 → 回归」2 分钟讲完项目主线，并稳接高频追问
-- [ ] 🔧 能脱离项目、独立复述 **ARouter 全流程机制全景**（编译期生成路由表 → init 加载到 Warehouse → 运行时 `navigation` 查表跳转），含三类文件、分组懒加载、`completion()` 补全 `Postcard` 等精确点
+### 模块三 · 第二轮：插件完整原理与 Java 21 兼容修复
+
+- [x] 能复述 Android 构建四阶段，明确 APT 生成路由表 Class、AGP Artifacts API 接管 Class、ASM 修改 Class、D8 生成 Dex 的职责边界。
+- [x] 能解释插件如何遍历 `allDirectories` 与 `allJars`，先按 Class Entry 路径筛选候选类，再按实现接口识别 Root、Provider、Interceptor。
+- [x] 能完整复述插件为何先收集全部路由表、缓存 `LogisticsCenter.class`，再通过 `ClassReader → ClassVisitor → MethodVisitor → ClassWriter` 修改 `loadRouterMap()`。
+- [x] 能解释在 `RETURN` 前插入 `LDC + INVOKESTATIC`、方法描述符 `(Ljava/lang/String;)V`，以及 `registerByPlugin` 如何让运行时跳过 Dex 扫描。
+- [x] 能从 Class 文件 major version 解释 Java 21 构建失败，说明 ASM 9.7、`ASM9`、运行时依赖解析、自维护发布及上游回馈的修复闭环。
+
+### 模块四 · 面试表达与治理收束
+
+- [x] 能在 2～3 分钟内按“背景 → 证据 → 根因 → 两轮修复 → 验证 → 防线”完整讲述项目，并能从项目主线自然下钻到全部原理。
+- [x] 能把个案抽象为增量劣化治理流程，并提出首次安装/升级首启、目标 variant 插桩、产物校验和 Java/AGP/ASM 兼容矩阵等防复发措施。
 
 ## 不在本课题范围内
 
-- ARouter 拦截器调度的完整实现（`IInterceptor` 优先级 / 异步链式拦截细节，只用「统一拦截」抽象）
-- `@Autowired` 参数注入 / 依赖查找的完整机制（只点到 Provider 服务获取）
-- AGP Transform / Artifacts API 的完整任务生命周期源码（只用到「在 D8 前接管 CLASSES 产物」抽象）
-- ASM 字节码指令集细节（只用到「在 return 前插入 register 调用」的抽象）
-- 其他启动优化手段（首屏裁剪、Application 瘦身等已在「首页启动优化」课题覆盖）
+- ARouter 拦截器的优先级、异步链式调度及降级策略完整源码。
+- `@Autowired` 参数注入、Provider 生命周期与依赖注入完整实现。
+- AGP 全部任务生命周期、ASM 完整指令集和 Class 文件格式规范；只深入本插件真实使用的部分。
+- 首屏裁剪、布局渲染、ContentProvider 治理等其他存量启动优化手段。
 
 ## 学习进度
 
 | 文档 | 覆盖掌握项 | 生成日期 |
 |------|-----------|---------|
-| 01.md | 模块一全部（口径：attachBaseContext→首页可见为何是业务可控区间、终点为何不停在 onCreate/onResume；工具：为何 Profiler 先行而非 Perfetto + Profiler 局限；🔧 ARouter 是什么/解决什么 + 三步链路铺垫） | 2026-06-29 |
-| 02.md | 模块二全部（Profiler 调用栈归因 openDexFileNative≈7.6s 来自 ARouter.init→LogisticsCenter.init→ClassUtils.getFileNameByPackageName；🔧 默认 dex 扫描方案为何贵；🔧 Warehouse/RouteMeta/Postcard 三概念+分组懒加载=装到哪；🔧 APT RouteProcessor+JavaPoet 生成 Root/Group/Provider=路由表哪来）；含 01 思考题复盘 | 2026-06-29 |
-| 03.md | 模块三全部（异步/换框架/register 三方案取舍；🔧 为何必须 ASM=源码已成 .class；🔧 构建四阶段+AGP Artifacts API 接管 CLASSES 产物；🔧 插桩两步=扫 routes 包认三接口 + ASM 在 loadRouterMap return 前插 register，含为何要复制 class；🔧 SP 缓存非根治）；含 02 思考题复盘 | 2026-06-29 |
-| 04.md | 模块四全部（三坑：AGP8 不兼容[查 issue]、Java21 major version 65[🔧 ASM ClassReader 读版本号根因+fork 升 ASM+PR 致谢]、variant 驼峰致插桩未生效[编译通过≠生效]；回归：首次冷启动 init 7.84s→100ms内/整体 9.4s→1.54s、后续启动几十ms→几ms、功能回归清单）；含 03 思考题复盘 | 2026-06-29 |
+| 01.md | 模块一全部：增量劣化定义、灰度下钻、复现口径、Profiler Sampling 与两轮问题地图 | 2026-07-16 |
+| 02.md | 模块二全部：ARouter 运行时跳转、编译期生成、Warehouse 懒加载、两条初始化路径、Dex 扫描根因、方案取舍与三层验证 | 2026-07-16 |
+| 03.md | 模块三全部：构建四阶段、Artifacts API、候选类与接口识别、两阶段扫描插桩、ASM 指令、Java 21/ASM 修复及上游闭环 | 2026-07-16 |
+| 04.md | 模块四全部：2～3 分钟面试主线、追问导航、证据分层、增量治理闭环与 CI/构建/功能防复发矩阵 | 2026-07-16 |
