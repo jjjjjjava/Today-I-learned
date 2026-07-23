@@ -1,46 +1,104 @@
-# 鸿蒙 FFmpeg 三方库（ffmpeg_tools）· 课程大纲
+# 鸿蒙 FFmpeg 视频处理 · 文档大纲
 
-> 这份大纲定义了完成本课题后你将掌握的所有能力。
-> 学习深度：标准
-> 文档数量因人而异，但掌握内容不打折扣。
-> 课题定位：讲清楚 `ffmpeg_tools` 这个鸿蒙三方库解决的工程核心问题，只到 fftools 使用层面，不深入 FFmpeg 底层源码。
-> 全局原理：本质是借助 **fftools（FFmpeg 命令行工具层）连接底层 libav* 库**，像 cmd 调 ffmpeg 一样拼命令交给它执行。
+> 项目定位：讲清楚录像下载与视频加水印为什么选择 FFmpeg，以及如何把桌面 fftools 命令模型搬到 OpenHarmony App。
 
-## 主线（三篇）
+## 学习目标
 
-完成本课题后，你将能够：
+完成本课题后，应能从业务、选型、架构和成果四个层次讲通项目：
 
-### 第一篇（01）：进程被 exit 退出宿主的问题（核心）
-- [x] 能说出根因：fftools 内部以 `exit()` 结束，作为库嵌入时会**杀掉整个宿主 App 进程**
-- [x] 能解释 `setjmp` / `longjmp` 如何把「退出进程」改成「退出本次命令、返回调用方」
-- [x] 能说清「优雅退出」=不退进程、把返回码 return 给调用者，调用者据此回调 `onSuccess`/`onFailed`
-- [x] 能说明跳转后为什么必须 `reset_ffmpeg_state`，以及 `ex_buf__` 为何要线程局部（`__thread`）
+1. 解释应用下架背景、H5 能力边界与紧急整改目标。
+2. 解释 RTSP 录像下载、图片水印为何选择 FFmpeg，而不是多组件组合方案。
+3. 说明 FFmpeg `libav*` 与 fftools 的职责边界。
+4. 说明 Mac 命令如何变成鸿蒙 ArkTS 到 Native 的函数调用。
+5. 讲清进程退出、双向通信、硬件编码和码率失效四个核心问题。
+6. 用可核验数据和开源 Issue 说明最终成果。
 
-### 第二篇（02）：我们如何调用到 native 的 fftools，fftools 又如何回调我们
-- [x] **问题一（去程）**：能讲清 AKI 宏注册 + ArkTS 调用 + `JSBIND_PFUNCTION` 开 worker 线程（参数经方舟编译器转 native、立即返回 Promise 不阻塞 UI）→ 转 argv → `exe_ffmpeg_cmd`
-- [x] **问题二（回程）**：能讲透两跳透传（`napi_ref` 强引用寄存 / `Callbacks` C 函数指针 / `g_callbacks` 与 `g_currentCallback` 两个全局）、C 带不了上下文靠 `g_currentCallback` 暗接头、`Invoke` 跨线程投递回主线程消息循环
-- [x] 能说明结束时按返回码回调 `onSuccess`/`onFailed`；uuid + 线程局部做回调隔离，但 fftools 因全局变量须上层串行
+## 文档结构
 
-### 第三篇（03）：后续优化
-- [x] 鸿蒙下 FFmpeg 如何启用硬件加速（`h264_ohosavcodec` + 支持硬解的 `.so` + 零拷贝何时根本不需要硬件）
-- [x] 码率设置为何失效（真实根因：OHOS 版 FFmpeg 的 `ohosvideoencoder.cpp::SetCodecFormat()` 漏写 `bit_rate`，硬件编码器配置丢掉了 `-b:v`；解法是改 native 源码补 `OH_MD_KEY_BITRATE` 并重编 `.so`，已向 OpenHarmony 提 Issue/MR）
+### [00.md](./00.md) · 项目全景
 
-## 收尾交付
-- [ ] 把以上内容整理成仓库可收录的文档
+- [x] 业务背景：H5 巡店缺失核心功能，版本下架并进入紧急整改。
+- [x] 需求范围：RTSP 主码流下载并封装 MP4；视频叠加图片水印。
+- [x] 技术选型：比较多组件组合方案与 FFmpeg 统一底座。
+- [x] FFmpeg 核心模块与 fftools 命令编排。
+- [x] 从 Mac `main(argc, argv)` 到鸿蒙 `exe_ffmpeg_cmd`。
+- [x] 编译、进程退出、调用、回调、硬件编码与线上问题总览。
+- [x] 业务重新上架、GitHub/OHPM 发布与上游反馈。
+- [x] 简历项目表述。
 
-## 不在本课题范围内
+### [01.md](./01.md) · fftools 结束宿主进程
 
-- FFmpeg 底层源码 / libav* C 级 API 编写、编解码算法
-- ffmpeg_tools 的基础用法 API 清单（executeFFmpegCommand / Factory / Builder 怎么调）
-- 录像下载、缩放、裁剪、拼接等具体命令清单
-- 鸿蒙 .so 交叉编译与 CMake 构建细节
+- [x] 区分独立命令行进程与 App 内嵌运行模型。
+- [x] 解释 `exit()` 为什么会结束整个宿主 App。
+- [x] 说明 `setjmp / longjmp` 如何把进程退出改成命令返回。
+- [x] 说明为何先保存返回码，再执行 `reset_ffmpeg_state()`。
+- [x] 说明 `__thread` 只隔离跳转状态，不代表 fftools 支持并发。
 
-## 学习进度
+### [02.md](./02.md) · ArkTS/Native 双向通信
 
-> 2026-06-30 重构为三篇：原 02（双向通信）与 03（透传原理）合并为新 02，回答「如何调用 + 如何回调」两个问题；原 04（优化）顺延为 03。
+- [x] 说明 `JSBIND_ADDON` 如何把 `.so` 注册为 Native Addon。
+- [x] 说明 `import`、模块 `exports` 与 `.d.ts` 的不同职责。
+- [x] 说明 `JSBIND_PFUNCTION` 的参数转换、Promise 与非 JS 线程执行。
+- [x] 说明 `vector<string>` 到 `argc / argv` 的第二次适配。
+- [x] 说明 UUID 回调注册、C 函数指针与 C++ 桥接函数。
+- [x] 区分 `g_callbacks` 与 `g_currentCallback`。
+- [x] 说明 AKI 从 Native 线程调度 JS 回调时的阻塞语义。
+- [x] 说明任务调度层为何限制工作线程数量为 `1`。
 
-| 文档 | 覆盖掌握项 | 生成日期 |
-|------|-----------|---------|
-| 01.md | 第一篇全部（exit 杀进程根因、setjmp/longjmp、优雅退出=返回码、reset 与线程局部）✅ | 2026-06-29 |
-| 02.md | 第二篇全部（去程：AKI 注册/PFUNCTION worker 线程；回程：两跳透传/g_currentCallback 暗接头/跨线程投递/onSuccess·onFailed）✅ | 2026-06-30 |
-| 03.md | 第三篇全部（鸿蒙硬件加速 h264_ohosavcodec；码率失效真实根因 ohosvideoencoder.cpp 漏写 bit_rate）✅ | 2026-06-29 |
+### [03.md](./03.md) · 硬件编码与码率问题
+
+- [x] 从 150 秒耗时判断软件编码瓶颈。
+- [x] 说明 `h264_ohosavcodec` 命令位置及输出编码语义。
+- [x] 根据 Native 日志定位当前 `.so` 未包含平台 codec。
+- [x] 获取适配源码、修改 `HPKBUILD`、重编单一 `.so`。
+- [x] 统一公司阶段 `150s -> 27s`、降低约 82% 的口径。
+- [x] 区分后续开源版本 `15.68s` 数据。
+- [x] 从 GitHub Issue 追踪 `-b:v` 参数传递链。
+- [x] 定位 `ohosvideoencoder.cpp` 漏写 `OH_MD_KEY_BITRATE`。
+- [x] 区分视频轨码率与文件总码率。
+- [x] 记录 GitHub 修复与 OpenHarmony 上游 Issue。
+
+## 事实基线
+
+以下内容已经在对话中确认：
+
+- 巡店模块原为 H5，核心能力缺失并在多次整改警告后导致版本下架。
+- 项目范围为录像下载与视频加水印；语音对讲不纳入本课题。
+- 录像通过接口获取 RTSP 地址，使用主码流，不使用辅码流，输出 MP4。
+- 水印为图片水印。
+- 技术调研、架构、开发、源码修改、优化、测试和插件发布由本人完成。
+- 平台沟通不由本人负责；华为驻场人员未参与该项目。
+- OpenHarmony SDK/NDK 工具链负责实际编译，Lycium 负责三方库构建组织。
+- 修改过 `HPKBUILD`，最终生成聚合后的单一 `.so`。
+- `setjmp / longjmp`、状态重置和线程局部跳转状态均为真实实现。
+- 公司项目性能数据为 2 分钟视频约 `150s -> 27s`。
+- 功能补齐后应用成功重新上架。
+- 能力发布至 GitHub 与 OHPM，并向 OpenHarmony FFmpeg 上游提交码率 Issue。
+
+## 不在本课题范围
+
+- 语音对讲的实现。
+- H.264/H.265 编解码算法原理。
+- FFmpeg 每个 demuxer、muxer、codec 和 filter 的完整清单。
+- 鸿蒙业务页面的视觉与交互细节。
+- 未经确认的设备型号、具体 SDK 小版本和审核沟通细节。
+
+## 面试验收
+
+能在不看文档时回答以下问题，才算真正掌握：
+
+1. 为什么 RTSP 录像下载和图片水印最终选择 FFmpeg？
+2. Mac 终端执行 `ffmpeg` 与鸿蒙 App 调用 fftools，进程模型有什么不同？
+3. ArkTS 调用 C++ 时，函数如何变得可见、参数如何转换、任务如何离开 JS 线程？
+4. 纯 C 的 fftools 如何找到并调用某个 ArkTS 任务的回调？
+5. 为什么写上 `h264_ohosavcodec` 后仍提示 codec 不存在？
+6. 如何沿参数链定位 `-b:v` 在硬件编码封装中被丢失？
+
+## 进度
+
+| 文档 | 状态 | 最后重构日期 |
+| --- | --- | --- |
+| `00.md` | 项目全景与简历表述完成 | 2026-07-21 |
+| `01.md` | 进程退出篇完成 | 2026-07-21 |
+| `02.md` | 双向通信篇完成 | 2026-07-21 |
+| `03.md` | 硬件编码与码率篇完成 | 2026-07-21 |
