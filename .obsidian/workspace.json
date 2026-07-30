@@ -13,12 +13,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ANR线上治理/03.md",
+                "file": "03_知识资产/有用.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "03"
+              "title": "有用"
+            }
+          },
+          {
+            "id": "4702e49b7c0f7ab2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "03_知识资产/Android/Flutter核心与MethodChannel综合面试笔记.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Flutter核心与MethodChannel综合面试笔记"
             }
           }
         ]
@@ -94,8 +108,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "ANR线上治理/03.md",
-                "collapseAll": false,
+                "file": "03_知识资产/有用.md",
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -104,7 +118,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "03 的反向链接列表"
+              "title": "有用 的反向链接列表"
             }
           },
           {
@@ -169,7 +183,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -184,10 +199,41 @@
   },
   "active": "5334e15f6c8d3fd9",
   "lastOpenFiles": [
-    "ANR线上治理/02.md",
+    "03_知识资产/有用02.md",
+    "03_知识资产/有用.md",
     "03_知识资产/Android/ANR复习/03_ 四类 ANR 差异对比.md",
     "03_知识资产/Android/ANR复习/02_Service ANR 源码全流程.md",
-    "ANR线上治理/01.md",
-    "01_静态体系/学习路径.md"
+    "03_知识资产/Android/ANR复习/01_ANR基础.md",
+    "03_知识资产/项目/ANR线上治理/00_线上ANR归因全流程.md",
+    "03_知识资产/项目/ANR线上治理/知识点/K10_NATIVE栈的四种方向.md",
+    "03_知识资产/项目/ANR线上治理/知识点/K06_nativePollOnce与采样滞后.md",
+    "03_知识资产/项目/ANR线上治理/知识点/K03_统计相关性不等于技术根因.md",
+    "03_知识资产/项目/ANR线上治理/阶段/05_单点归因_主线程与堆栈状态.md",
+    "03_知识资产/项目/ANR线上治理/复习/01_全流程模拟.md",
+    "03_知识资产/项目/ANR线上治理/知识点/K02_页面机型企业与公共栈切片.md",
+    "03_知识资产/项目/ANR线上治理/知识点/K01_事件量与影响用户数.md",
+    "03_知识资产/项目/ANR线上治理/阶段/04_单点归因_有效性判断.md",
+    "03_知识资产/项目/ANR线上治理/阶段/03_爆发归因.md",
+    "03_知识资产/项目/ANR线上治理/阶段/02_共性归因.md",
+    "03_知识资产/项目/ANR线上治理/阶段/01_发现入口.md",
+    "03_知识资产/Android/Flutter核心与MethodChannel综合面试笔记.md",
+    "03_知识资产/项目/首页启动优化/阶段/09_基线与预算回填.md",
+    "03_知识资产/项目/首页启动优化/阶段/07_回归问题处理.md",
+    "03_知识资产/项目/首页启动优化/阶段/08_线上灰度.md",
+    "03_知识资产/项目/首页启动优化/阶段/06_结果验证.md",
+    "03_知识资产/项目/首页启动优化/阶段/04_结合源码归因.md",
+    "03_知识资产/项目/首页启动优化/阶段/05_方案设计与优先级.md",
+    "03_知识资产/项目/首页启动优化/阶段/02_线下复现与口径.md",
+    "03_知识资产/项目/首页启动优化/阶段/03_Trace采集与分析.md",
+    "03_知识资产/项目/首页启动优化/阶段",
+    "04_学习追踪/学习卡片/启动优化/项目阶段",
+    "ANR线上治理/知识点",
+    "04_学习追踪/学习卡片/ARouter/机制阶段",
+    "ANR线上治理/阶段",
+    "ANR线上治理/复习",
+    "ANR线上治理/archive/旧课程",
+    "ANR线上治理/archive",
+    "04_学习追踪/学习卡片/鸿蒙FFmpeg/项目阶段",
+    "04_学习追踪/学习卡片/鸿蒙FFmpeg/知识点"
   ]
 }
