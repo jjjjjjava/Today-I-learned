@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>串口原理与 Android 接入：面试表达</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <h1>串口原理与 Android 接入</h1>
+  <p class="lead">目标：诚实回答“是否做过串口”，并能继续讲清原理与 Android 接入方案。</p>
+
+  <h2>第一句先守住经历边界</h2>
+  <blockquote>
+    智控平台的蓝牙配网没有直接使用串口，所以这部分我不包装成项目经验。不过以前处理 Linux 侧协议时接触过串口通信，理解 UART 参数、设备节点读写以及 Android 侧两类接入方式。
+  </blockquote>
+
+  <h2>串口原理</h2>
+  <p>UART 是异步串行通信。发送端把字节按位发送，接收端按双方约定的参数还原数据。常见参数是波特率、数据位、停止位和校验位，例如 <code>115200 8N1</code>。</p>
+  <div class="flow">空闲位 → 起始位 → 数据位 → 可选校验位 → 停止位</div>
+  <p>基础全双工 UART 至少使用 TX、RX、GND。双方 TX 和 RX 交叉连接，并共地。UART 只规定字节如何在线上传输；帧头、长度、命令字、数据、校验和等属于上层业务协议。</p>
+
+  <h2>Linux 与 Android</h2>
+  <p>Linux 把串口抽象为 TTY 设备文件，例如 <code>/dev/ttyS*</code>、<code>/dev/ttyUSB*</code> 或 <code>/dev/ttyACM*</code>。程序打开设备节点，通过 <code>termios</code> 设置波特率、数据位、校验和停止位，然后使用 <code>read/write</code> 收发字节。</p>
+  <p>Android 内置 UART 多见于工控机、车机和定制平板。应用通常通过 JNI/NDK 打开设备节点，或由厂商提供系统服务和 SDK。关键不是代码本身，而是设备节点权限、SELinux 和系统白名单。AOSP 虽有 <code>SerialManager</code>，但它是隐藏系统 API，不是普通三方应用的通用公开接口。</p>
+  <p>普通手机更常见 USB 转串口。Android 作为 USB Host，通过 <code>UsbManager</code> 枚举设备、按 VID/PID 匹配、申请用户授权、打开 <code>UsbDeviceConnection</code>，再由驱动库配置串口参数并异步读写。收发不能阻塞主线程，断开时要停止读线程并关闭连接。</p>
+
+  <h2>一分钟面试答案</h2>
+  <blockquote>
+    这个 IoT 项目里我主要负责 BLE 配网，没有直接负责串口，所以不会说自己落地过串口模块。不过以前处理 Linux 协议时接触过串口。串口本质是 UART 异步串行通信，双方约定波特率、数据位、停止位和校验位，例如 115200、8N1；发送时一个字节会被包装成起始位、数据位、可选校验位和停止位。UART 解决字节传输，上层还要自己定义帧头、长度、命令字和校验。
+    在 Linux 中，一般打开 /dev/ttyS 或 /dev/ttyUSB，通过 termios 配置参数，再 read/write。Android 如果是定制设备的板载 UART，通常通过 JNI 或厂商 SDK 访问设备节点，还要处理节点权限和 SELinux；如果是普通手机接 USB 转串口，则使用 USB Host API，完成设备枚举、授权和连接，再通过串口驱动库异步收发数据。这部分我理解原理和接入路径，但没有包装成该项目的实际产出。
+  </blockquote>
+
+  <h2>快速自测</h2>
+  <ol>
+    <li><code>115200 8N1</code> 四部分分别代表什么？</li>
+    <li>为什么 UART 已能传字节，上层仍需要帧头、长度和校验？</li>
+    <li>板载 UART 与 USB 转串口在 Android 接入上最大区别是什么？</li>
+  </ol>
+
+  <p class="note">主参考：
+    <a href="https://developer.android.com/develop/connectivity/usb/host">Android USB Host</a>、
+    <a href="https://android.googlesource.com/platform/frameworks/base/+/android14-qpr2-s1-release/core/java/android/hardware/SerialManager.java">AOSP SerialManager</a>。
+    有不清楚处，继续向助手追问。
+  </p>
+  <p><a href="../reference/serial-port-cheatsheet.html">打开串口面试速查表</a></p>
+</main>
+</body>
+</html>

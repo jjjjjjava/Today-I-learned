@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>串口面试速查</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <h1>串口面试速查</h1>
+  <p class="lead">一句边界、一个原理、两种 Android 接法。</p>
+
+  <h2>经历边界</h2>
+  <p>IoT 项目未直接负责串口；Linux 协议开发中接触过。理解原理与 Android 接入，不冒充落地经历。</p>
+
+  <h2>核心原理</h2>
+  <ul>
+    <li>UART：异步、串行、常见全双工。</li>
+    <li>线路：TX、RX、GND；TX/RX 交叉并共地。</li>
+    <li><code>115200 8N1</code>：波特率 115200、8 数据位、无校验、1 停止位。</li>
+    <li>字符帧：起始位、数据位、可选校验位、停止位。</li>
+    <li>UART 传字节；业务协议负责帧头、长度、命令、载荷、校验和。</li>
+  </ul>
+
+  <h2>Android 两条路径</h2>
+  <ul>
+    <li>板载 UART：<code>/dev/ttyS*</code>；JNI/NDK 或厂商 SDK；关注权限、SELinux、系统定制。</li>
+    <li>USB 转串口：USB Host；枚举、VID/PID 匹配、授权、打开连接、配置参数、异步收发、关闭资源。</li>
+  </ul>
+
+  <h2>常见追问</h2>
+  <ul>
+    <li>粘包拆包：串口是字节流，用帧头、长度或分隔符组帧。</li>
+    <li>校验：奇偶校验发现单比特类错误；业务层常再用 checksum 或 CRC。</li>
+    <li>乱码：优先检查波特率、数据位、校验、停止位、电平和共地。</li>
+    <li>丢包：检查读取线程、缓冲区、流控、协议重试及硬件干扰。</li>
+    <li>线程：阻塞读放工作线程；收到字节先缓存组帧，再交业务层解析。</li>
+  </ul>
+</main>
+</body>
+</html>
